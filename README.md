@@ -10,7 +10,7 @@ This project is an AI-powered album recommendation system built around Pitchfork
 
 ## Data Pipeline
 
-1. **Scraping**: `album_scraper.py` collects thousands of reviews from Pitchfork, saving them as CSV/JSON.
+1. **Scraping**: `album_scraper.py` collects thousands of reviews from Pitchfork, saving them as CSV.
 2. **Preprocessing**: `dataset_creator.py` cleans and normalizes the data, engineering features for downstream analysis.
 3. **Analysis**: `sentiment_analyzer.py` applies NLP models and custom keyword lists to extract rich features from each review.
 4. **Recommendation**: `recommender_model.py` builds semantic and keyword-based models to match user queries to albums.
@@ -38,7 +38,7 @@ AI-powered album recommender using Pitchfork reviews with advanced NLP, sentimen
 python3 -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 
-python album_scraper.py          # Scrape reviews
+python album_scraper.py          # Scrape reviews, (DO NOT RUN UNLESS YOU REALLY HAVE TO AS IT WILL TAKE A VERY LONG TIME!!!)
 python dataset_creator.py        # Preprocess with NLTK and turn into a dataset
 python sentiment_analyzer.py     # Analyze (8+ feature types) from review texts
 python recommender_model.py      # builds the model and recommends albums based on given prompt

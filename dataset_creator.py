@@ -1,6 +1,5 @@
 import pandas as pd
 import re
-from collections import Counter
 import nltk
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer, PorterStemmer
