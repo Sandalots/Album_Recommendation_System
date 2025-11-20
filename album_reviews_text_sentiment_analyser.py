@@ -1,3 +1,9 @@
+from sentiment.sentiment_keywords import (
+    positive_words, negative_words, musical_terms, descriptive_words,
+    intensity_modifiers, char_patterns, instrument_keywords, quality_indicators,
+    style_indicators, mood_keywords, energy_indicators, polarizing_phrases,
+    novelty_positive, novelty_negative, context_keywords, era_keywords, lyrical_theme_keywords, general_theme_keywords
+)
 import pandas as pd
 from transformers import pipeline
 import re
@@ -9,12 +15,6 @@ from transformers import logging
 logging.set_verbosity_error()
 
 # from the sentiment directory, retrieve the following sentiment matching keywords rules;
-from sentiment.sentiment_keywords import (
-    positive_words, negative_words, musical_terms, descriptive_words,
-    intensity_modifiers, char_patterns, instrument_keywords, quality_indicators,
-    style_indicators, mood_keywords, energy_indicators, polarizing_phrases,
-    novelty_positive, novelty_negative, context_keywords, era_keywords, lyrical_theme_keywords, general_theme_keywords
-)
 
 
 class ReviewAnalyser:
@@ -325,26 +325,31 @@ class ReviewAnalyser:
         df_sample = self.df
         text_column = 'review_text_processed' if 'review_text_processed' in df_sample.columns else 'review_text'
 
-
         def process_review(row):
-            text_processed = str(row[text_column]) if pd.notna(row[text_column]) else ''
-            text_original = str(row['review_text']) if pd.notna(row['review_text']) else ''
+            text_processed = str(row[text_column]) if pd.notna(
+                row[text_column]) else ''
+            text_original = str(row['review_text']) if pd.notna(
+                row['review_text']) else ''
             sentiment = self.analyze_sentiment(text_processed)
-            highlights = self.extract_key_sentences(text_original, num_sentences=4)
+            highlights = self.extract_key_sentences(
+                text_original, num_sentences=4)
             themes = self.extract_themes(text_original)
             lyrical_themes = self.extract_lyrical_themes(text_original)
             comparisons = self.extract_comparative_context(text_original)
             musical_chars = self.extract_musical_characteristics(text_original)
-            musical_chars_str = ', '.join([f"{k}:{v:.1f}" for k, v in musical_chars.items()])
+            musical_chars_str = ', '.join(
+                [f"{k}:{v:.1f}" for k, v in musical_chars.items()])
             instruments = self.extract_instrumentation(text_original)
             prod_quality = self.extract_production_quality(text_original)
             mood_energy = self.extract_mood_energy(text_original)
-            mood_str = ', '.join(mood_energy['mood']) if mood_energy['mood'] else 'neutral'
+            mood_str = ', '.join(
+                mood_energy['mood']) if mood_energy['mood'] else 'neutral'
             energy_str = ['low', 'medium', 'high'][mood_energy['energy'] + 1]
             is_polarizing = self.detect_polarizing_language(text_original)
             novelty_score = self.extract_novelty_indicators(text_original)
             release_year = row.get('release_year', 2000)
-            temporal = self.extract_temporal_context(text_original, release_year)
+            temporal = self.extract_temporal_context(
+                text_original, release_year)
             contexts = self.extract_context_indicators(text_original)
             return {
                 'sentiment': sentiment,
@@ -367,12 +372,14 @@ class ReviewAnalyser:
         num_workers = os.cpu_count() or 4
         # Parallel analysis starting (silent)
         with ThreadPoolExecutor(max_workers=num_workers) as executor:
-            future_to_idx = {executor.submit(process_review, row): idx for idx, row in df_sample.iterrows()}
+            future_to_idx = {executor.submit(
+                process_review, row): idx for idx, row in df_sample.iterrows()}
             for i, future in enumerate(as_completed(future_to_idx)):
                 idx = future_to_idx[future]
                 # Only print every 500 reviews
                 if i % 500 == 0:
-                    print(f"Processed {i}/{len(df_sample)} album reviews sentiment...")
+                    print(
+                        f"Processed {i}/{len(df_sample)} album reviews sentiment...")
                 try:
                     results.append((idx, future.result()))
                 except Exception as e:
@@ -381,19 +388,31 @@ class ReviewAnalyser:
 
         # Sort results by index to preserve order
         results.sort(key=lambda x: x[0])
-        sentiments = [r[1]['sentiment'] if r[1] else {'label': 'NEUTRAL', 'score': 0.5} for r in results]
-        key_highlights = [r[1]['key_highlights'] if r[1] else '' for r in results]
+        sentiments = [r[1]['sentiment'] if r[1] else {
+            'label': 'NEUTRAL', 'score': 0.5} for r in results]
+        key_highlights = [r[1]['key_highlights']
+                          if r[1] else '' for r in results]
         themes_list = [r[1]['themes'] if r[1] else 'general' for r in results]
-        lyrical_themes_list = [r[1]['lyrical_themes'] if r[1] else '' for r in results]
-        comparisons_list = [r[1]['comparisons'] if r[1] else '' for r in results]
-        musical_chars_list = [r[1]['musical_chars'] if r[1] else '' for r in results]
-        instrumentation_list = [r[1]['instrumentation'] if r[1] else '' for r in results]
-        production_quality_list = [r[1]['production_quality'] if r[1] else '' for r in results]
-        mood_energy_list = [r[1]['mood_energy'] if r[1] else '' for r in results]
-        polarizing_list = [r[1]['is_polarizing'] if r[1] else False for r in results]
-        novelty_scores = [r[1]['novelty_score'] if r[1] else 0 for r in results]
-        temporal_context_list = [r[1]['temporal_context'] if r[1] else '' for r in results]
-        context_indicators_list = [r[1]['listening_contexts'] if r[1] else '' for r in results]
+        lyrical_themes_list = [r[1]['lyrical_themes']
+                               if r[1] else '' for r in results]
+        comparisons_list = [r[1]['comparisons']
+                            if r[1] else '' for r in results]
+        musical_chars_list = [r[1]['musical_chars']
+                              if r[1] else '' for r in results]
+        instrumentation_list = [r[1]['instrumentation']
+                                if r[1] else '' for r in results]
+        production_quality_list = [
+            r[1]['production_quality'] if r[1] else '' for r in results]
+        mood_energy_list = [r[1]['mood_energy']
+                            if r[1] else '' for r in results]
+        polarizing_list = [r[1]['is_polarizing']
+                           if r[1] else False for r in results]
+        novelty_scores = [r[1]['novelty_score']
+                          if r[1] else 0 for r in results]
+        temporal_context_list = [
+            r[1]['temporal_context'] if r[1] else '' for r in results]
+        context_indicators_list = [
+            r[1]['listening_contexts'] if r[1] else '' for r in results]
 
         print(f"\n✓ Sentiment analysis complete for {len(df_sample)} reviews.")
 
@@ -425,9 +444,12 @@ class ReviewAnalyser:
         print(df_sample['sentiment_label'].value_counts())
         if 'score_category' in df_sample.columns:
             print("Average sentiment score by album rating category:")
-            print(df_sample.groupby('score_category')['sentiment_score'].mean())
-        print(f"\nPolarizing/Divisive Albums: {df_sample['is_polarizing'].sum()} ({df_sample['is_polarizing'].sum()/len(df_sample)*100:.1f}%)")
-        print(f"\nNovelty - Innovative: {(df_sample['novelty_score'] > 0).sum()}, Derivative: {(df_sample['novelty_score'] < 0).sum()}, Neutral: {(df_sample['novelty_score'] == 0).sum()}")
+            print(df_sample.groupby('score_category')
+                  ['sentiment_score'].mean())
+        print(
+            f"\nPolarizing/Divisive Albums: {df_sample['is_polarizing'].sum()} ({df_sample['is_polarizing'].sum()/len(df_sample)*100:.1f}%)")
+        print(
+            f"\nNovelty - Innovative: {(df_sample['novelty_score'] > 0).sum()}, Derivative: {(df_sample['novelty_score'] < 0).sum()}, Neutral: {(df_sample['novelty_score'] == 0).sum()}")
         print("\nSaving sentiment analysed pitchfork reviews dataset...")
         os.makedirs('outputs', exist_ok=True)
         df_sample.to_csv(
@@ -474,7 +496,8 @@ def main():
     analyzer.load_models()
     analyzer.analyze_all_reviews()
 
-    print(f"✓ Complete! All albums sentiment analyzed and saved to '{output_path}'")
+    print(
+        f"✓ Complete! All albums sentiment analyzed and saved to '{output_path}'")
 
     analyzer.show_examples(num_examples=5)
 
