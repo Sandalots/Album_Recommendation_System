@@ -19,7 +19,7 @@
 - **TF-IDF**: For keyword-based similarity.
 - **Feature Extraction**: Custom logic for mood, energy, instrumentation, production, novelty, context, and more.
 
-## Streamlit End to End Application
+## Streamlit End to End Album Recommendation Prompt Application
 - Enter a prompt describing your desired album (genre, mood, context, etc.).
 - View recommended albums with cover art, artist, score, and highlights.
 - UI features include centered content, fade-in animations, custom button styling, and hidden Streamlit menu/deploy buttons.
