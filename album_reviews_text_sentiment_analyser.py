@@ -16,7 +16,7 @@ from sentiment.sentiment_keywords import (
 
 class ReviewAnalyser:
     def __init__(self, data_path='outputs/pitchfork_reviews_preprocessed.csv'):
-        print("Loading album reviews dataset for sentiment analysis...")
+        # Loading silently
         self.df = pd.read_csv(data_path)
         self.sentiment_analyzer = None
         self.summarizer = None
@@ -28,21 +28,17 @@ class ReviewAnalyser:
             self.df['review_text_processed'] = self.df['review_text']
 
     def load_models(self):
-        print("\nLoading model for album review sentiment analysis...")
         self.sentiment_analyzer = pipeline(
             "sentiment-analysis",
             model="distilbert-base-uncased-finetuned-sst-2-english",
             device=-1
         )
-
-        print("Loading text summarization model...")
         self.summarizer = pipeline(
             "summarization",
             model="facebook/bart-large-cnn",
             device=-1
         )
-
-        print("✓ Sentiment and summarization models loaded for album reviews\n")
+        # Models loaded silently
 
     def analyze_sentiment(self, text, max_length=512):
         if not text or len(text.strip()) == 0:
@@ -322,18 +318,9 @@ class ReviewAnalyser:
         return themes
 
     def analyze_all_reviews(self):
-        print("="*80)
-        print("ALBUM REVIEWS SENTIMENT ANALYSIS")
-        print("="*80 + "\n")
-
+        print("Starting sentiment analysis for all album reviews...")
         df_sample = self.df
-        print(
-            f"Analyzing sentiment for all {len(df_sample)} album reviews...\n")
-
-        # Use preprocessed text for efficiency (lemmatized version)
         text_column = 'review_text_processed' if 'review_text_processed' in df_sample.columns else 'review_text'
-        print(
-            f"Using '{text_column}' column for sentiment analysis (preprocessed text)\n")
 
 
         def process_review(row):
@@ -375,13 +362,14 @@ class ReviewAnalyser:
         results = []
 
         num_workers = os.cpu_count() or 4
-        print(f"Using {num_workers} threads for parallel sentiment analysis.")
+        # Parallel analysis starting (silent)
         with ThreadPoolExecutor(max_workers=num_workers) as executor:
             future_to_idx = {executor.submit(process_review, row): idx for idx, row in df_sample.iterrows()}
             for i, future in enumerate(as_completed(future_to_idx)):
                 idx = future_to_idx[future]
-                if i % 50 == 0:
-                    print(f"  Sentiment processed for {i}/{len(df_sample)} album reviews...")
+                # Only print every 500 reviews
+                if i % 500 == 0:
+                    print(f"Processed {i}/{len(df_sample)} reviews...")
                 try:
                     results.append((idx, future.result()))
                 except Exception as e:
@@ -404,8 +392,7 @@ class ReviewAnalyser:
         temporal_context_list = [r[1]['temporal_context'] if r[1] else '' for r in results]
         context_indicators_list = [r[1]['listening_contexts'] if r[1] else '' for r in results]
 
-        print(
-            f"✓ Completed sentiment analysis for {len(df_sample)} album reviews\n")
+        print(f"✓ Sentiment analysis complete for {len(df_sample)} reviews.")
 
         # Existing columns
         df_sample['sentiment_label'] = [s['label'] for s in sentiments]
@@ -429,72 +416,16 @@ class ReviewAnalyser:
         df_sample['critical_consensus'] = df_sample.apply(
             self.analyze_critical_consensus, axis=1)
 
-        print("="*80)
-        print("ALBUM REVIEWS SENTIMENT ANALYSIS RESULTS")
-        print("="*80)
-        print(f"\nAlbum Review Sentiment Distribution:")
+        # Print only summary stats
+        print("\nSummary of sentiment analysis results:")
+        print("Sentiment label distribution:")
         print(df_sample['sentiment_label'].value_counts())
-
-        print(f"\nAverage Sentiment Score by Album Rating Category:")
         if 'score_category' in df_sample.columns:
-            sentiment_by_score = df_sample.groupby('score_category')[
-                'sentiment_score'].mean()
-            print(sentiment_by_score)
-
-        print("\n" + "="*80)
-        print("THEME ANALYSIS")
-        print("="*80)
-        all_themes = []
-        for theme_str in df_sample['themes']:
-            all_themes.extend(theme_str.split(', '))
-
-        theme_counts = Counter(all_themes)
-        print(f"\nMost Common Themes:")
-        for theme, count in theme_counts.most_common(10):
-            print(f"  {theme}: {count}")
-
-        print("\n" + "="*80)
-        print("ENHANCED FEATURE ANALYSIS")
-        print("="*80)
-
-        # Instrumentation analysis
-        all_instruments = []
-        for instr_str in df_sample['instrumentation']:
-            if instr_str:
-                all_instruments.extend(instr_str.split(', '))
-        instrument_counts = Counter(all_instruments)
-        print(f"\nMost Common Instruments:")
-        for instrument, count in instrument_counts.most_common(10):
-            print(f"  {instrument}: {count}")
-
-        # Polarizing albums
-        polarizing_count = df_sample['is_polarizing'].sum()
-        print(
-            f"\nPolarizing/Divisive Albums: {polarizing_count} ({polarizing_count/len(df_sample)*100:.1f}%)")
-
-        # Novelty distribution
-        print(f"\nNovelty Score Distribution:")
-        print(f"  Innovative (>0): {(df_sample['novelty_score'] > 0).sum()}")
-        print(f"  Derivative (<0): {(df_sample['novelty_score'] < 0).sum()}")
-        print(f"  Neutral (=0): {(df_sample['novelty_score'] == 0).sum()}")
-
-        # Critical consensus
-        print(f"\nCritical Consensus:")
-        print(df_sample['critical_consensus'].value_counts())
-
-        # Listening contexts
-        all_contexts = []
-        for context_str in df_sample['listening_contexts']:
-            if context_str:
-                all_contexts.extend(context_str.split(', '))
-        context_counts = Counter(all_contexts)
-        print(f"\nListening Contexts:")
-        for context, count in context_counts.most_common():
-            print(f"  {context}: {count}")
-
-        print("\n" + "="*80)
+            print("Average sentiment score by album rating category:")
+            print(df_sample.groupby('score_category')['sentiment_score'].mean())
+        print(f"Polarizing/Divisive Albums: {df_sample['is_polarizing'].sum()} ({df_sample['is_polarizing'].sum()/len(df_sample)*100:.1f}%)")
+        print(f"Novelty - Innovative: {(df_sample['novelty_score'] > 0).sum()}, Derivative: {(df_sample['novelty_score'] < 0).sum()}, Neutral: {(df_sample['novelty_score'] == 0).sum()}")
         print("Saving enhanced dataset...")
-        print("="*80)
         os.makedirs('outputs', exist_ok=True)
         df_sample.to_csv(
             'outputs/pitchfork_reviews_preprocessed_plus_sentiments.csv', index=False)
@@ -533,7 +464,6 @@ class ReviewAnalyser:
 
 def main():
     print("Starting full dataset analysis...")
-    print("This will analyze all albums in the dataset.\n")
 
     # Use outputs directory for all files
     data_path = 'outputs/pitchfork_reviews_preprocessed.csv'
@@ -544,15 +474,6 @@ def main():
     analyzer.analyze_all_reviews()
 
     print(f"\n✓ Complete! All albums analyzed and saved to '{output_path}'")
-    print("\n🎵 Enhanced with comprehensive features:")
-    print("  • Instrumentation tracking")
-    print("  • Production quality & style")
-    print("  • Mood & energy levels")
-    print("  • Polarizing language detection")
-    print("  • Novelty indicators")
-    print("  • Temporal context")
-    print("  • Listening context suggestions")
-    print("  • Critical consensus analysis")
 
     analyzer.show_examples(num_examples=5)
 

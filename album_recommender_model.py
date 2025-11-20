@@ -7,26 +7,24 @@ from sentence_transformers import SentenceTransformer
 import pickle
 
 
-
 class EnhancedRecommender:
     def __init__(self, data_path='outputs/pitchfork_reviews_preprocessed_plus_sentiments.csv'):
-        print("Loading analyzed album reviews dataset for recommendation model...")
+        # Loading silently
         self.df = pd.read_csv(data_path)
         self.vectorizer = None
         self.tfidf_matrix = None
         self.embeddings = None
         self.model = None
-        print(
-            f"✓ Loaded {len(self.df)} albums with sentiment, themes, and other features for recommendation\n")
+        # Loaded silently
 
         # Check if enhanced preprocessing features are available
         self.has_enhanced_features = all(col in self.df.columns for col in
                                          ['review_text_processed', 'unique_word_ratio', 'score_normalized'])
         if self.has_enhanced_features:
-            print("✓ Enhanced preprocessing features detected for album reviews\n")
+            pass  # Enhanced features detected silently
 
     def build_models(self):
-        print("Building album recommendation models using sentiment, TF-IDF, and semantic features...")
+        print("Building album recommendation models...")
 
         # Create enriched feature vectors with all available information
         feature_components = [
@@ -73,12 +71,12 @@ class EnhancedRecommender:
 
         # If enhanced preprocessing is available, use processed text for better TF-IDF
         if self.has_enhanced_features and 'review_text_processed' in self.df.columns:
-            print("  Using preprocessed album review text for TF-IDF (lemmatized)...")
+            # Using preprocessed album review text for TF-IDF (silent)
             # Add processed review text to features for better matching
             self.df['combined_features'] = (self.df['combined_features'] + ' ' +
                                             self.df['review_text_processed'].fillna(''))
 
-        print("  Building TF-IDF model using genres, album title, artist name, score, release year, themes, key highlights, sentiment, mood, instrumentation, production quality, listening context, novelty, and processed review text for rich album recommendations...")
+        # Building TF-IDF model (silent)
         self.vectorizer = TfidfVectorizer(
             max_features=8000,  # Increased from 5000
             stop_words='english',
@@ -89,7 +87,7 @@ class EnhancedRecommender:
         self.tfidf_matrix = self.vectorizer.fit_transform(
             self.df['combined_features'])
 
-        print("  Building semantic embeddings for album reviews...")
+        # Building semantic embeddings (silent)
         self.model = SentenceTransformer('all-MiniLM-L6-v2')
 
         # Create richer text for embeddings including artist and album names
@@ -129,7 +127,7 @@ class EnhancedRecommender:
             batch_size=32
         )
 
-        print("✓ Album recommendation models built (TF-IDF, semantic, sentiment, and feature-based)\n")
+        print("✓ Album recommendation models built.")
 
     def recommend_by_mood(self, mood_description, top_n=5, sentiment_filter=None, min_score=None):
         """
@@ -237,7 +235,7 @@ class EnhancedRecommender:
             instruments = [instruments]
 
         if 'instrumentation' not in self.df.columns:
-            print("⚠️ Instrumentation data not available")
+            # Instrumentation data not available (silent)
             return []
 
         def instrument_match_score(instr_str):
@@ -266,7 +264,7 @@ class EnhancedRecommender:
             energy_level: 'high', 'medium', or 'low'
         """
         if 'mood_energy' not in self.df.columns:
-            print("⚠️ Mood/energy data not available")
+            # Mood/energy data not available (silent)
             return []
 
         results_df = self.df.copy()
@@ -528,47 +526,8 @@ class EnhancedRecommender:
 
 
 def main():
-    print("="*80)
-    print("ENHANCED ALBUM RECOMMENDATION SYSTEM")
-    print("With Sentiment Analysis & Theme Detection")
-    print("="*80 + "\n")
-
+    print("Album Recommendation System initializing...")
     recommender = EnhancedRecommender()
     recommender.build_models()
-
-    print("="*80)
-    print("EXAMPLE 1: Mood-Based Search - 'dark atmospheric electronic'")
-    print("="*80)
-    recs = recommender.recommend_by_mood(
-        "dark atmospheric electronic music with emotional depth",
-        top_n=5,
-        min_score=7.5
-    )
-    recommender.display_recommendations(recs)
-
-    print("="*80)
-    print("EXAMPLE 2: Theme-Based - Experimental + Atmospheric albums")
-    print("="*80)
-    recs = recommender.recommend_by_themes(
-        ['experimental', 'atmospheric'],
-        top_n=5,
-        min_score=8.0
-    )
-    recommender.display_recommendations(recs)
-
-    print("="*80)
-    print("EXAMPLE 3: Positive-sentiment Pop/R&B albums")
-    print("="*80)
-    recs = recommender.recommend_by_sentiment_and_genre(
-        'Pop/R&B',
-        sentiment='POSITIVE',
-        top_n=5,
-        min_score=7.5
-    )
-    recommender.display_recommendations(recs)
-
     recommender.save_models()
-
-
-if __name__ == "__main__":
-    main()
+    print("✓ Models built and saved.")
