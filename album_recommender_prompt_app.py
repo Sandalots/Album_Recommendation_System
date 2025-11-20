@@ -201,10 +201,11 @@ def get_album_arts_parallel(urls):
 
 @st.cache_resource
 def load_recommender():
+    print("Loading models: TF-IDF (text similarity), semantic embeddings (contextual meaning), and feature-engineered vectors (album attributes) for fast, accurate album recommendations.")
     recommender = EnhancedRecommender()
     # Try loading pre-built models first
     if not recommender.load_models():
-        # If loading fails, build models from scratch
+        print("Pre-built models not found. Building models from scratch. This may take a moment...")
         recommender.build_models()
     return recommender
 

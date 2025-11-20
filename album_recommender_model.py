@@ -141,7 +141,9 @@ class EnhancedRecommender:
         if self.embeddings is None:
             raise ValueError("Models not built. Call build_models() first.")
 
-        user_embedding = self.model.encode([mood_description])
+        # Make query case-insensitive
+        mood_description_lower = mood_description.lower()
+        user_embedding = self.model.encode([mood_description_lower])
         similarities = cosine_similarity(
             user_embedding, self.embeddings).flatten()
 
