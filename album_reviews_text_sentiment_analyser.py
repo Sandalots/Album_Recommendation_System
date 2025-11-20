@@ -3,6 +3,7 @@ from transformers import pipeline
 import re
 from collections import Counter
 import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # from the sentiment directory, retrieve the following sentiment matching keywords rules;
 from sentiment.sentiment_keywords import (
@@ -335,10 +336,6 @@ class ReviewAnalyser:
             f"Using '{text_column}' column for sentiment analysis (preprocessed text)\n")
 
 
-
-        import os
-        from concurrent.futures import ThreadPoolExecutor, as_completed
-
         def process_review(row):
             text_processed = str(row[text_column]) if pd.notna(row[text_column]) else ''
             text_original = str(row['review_text']) if pd.notna(row['review_text']) else ''
@@ -556,7 +553,6 @@ def main():
     print("  • Temporal context")
     print("  • Listening context suggestions")
     print("  • Critical consensus analysis")
-    print("\nYou can now run the Streamlit app!")
 
     analyzer.show_examples(num_examples=5)
 
