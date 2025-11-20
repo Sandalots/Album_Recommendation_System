@@ -8,7 +8,7 @@
 ## Album Recommendation System Pipeline
 1. **Scraping**: `pitchfork_album_scraper.py` collects thousands of reviews from Pitchfork, saving them as CSV.
 2. **Preprocessing**: `album_reviews_dataset_creator.py` cleans and normalizes the data, engineering features for downstream analysis.
-3. **Analysis**: `album_reviews_text_sentiment_analyser.py` applies NLP models and custom keyword lists to extract rich features from each review.
+3. **Sentiment Analysis**: `album_reviews_text_sentiment_analyser.py` applies NLP models and custom keyword lists to extract rich features from each review.
 4. **Recommendation**: `album_recommender_model.py` builds semantic and keyword-based models to match user queries to albums.
 5. **User Interface**: `album_recommender_prompt_app.py` provides a fast, interactive Streamlit UI for exploring recommendations.
 
