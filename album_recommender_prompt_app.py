@@ -17,8 +17,6 @@ logging.getLogger('streamlit').setLevel(logging.CRITICAL)
 logging.getLogger('streamlit.runtime.scriptrunner_utils.script_run_context').setLevel(
     logging.CRITICAL)
 
-# Redirect stderr to suppress thread warnings
-
 
 class SuppressStderr:
     def write(self, msg):
@@ -33,110 +31,8 @@ sys.stderr = SuppressStderr()
 
 st.set_page_config(page_title="Album Recommender", page_icon="🎵")
 
-# Hide Streamlit menu and deploy button
-st.markdown("""
-<style>
-    #MainMenu {visibility: hidden !important; display: none !important;}
-    header {visibility: hidden !important; display: none !important;}
-    footer {visibility: hidden !important; display: none !important;}
-    [data-testid="stToolbar"] {visibility: hidden !important; display: none !important;}
-    .stDeployButton {visibility: hidden !important; display: none !important;}
-    button[kind="header"] {visibility: hidden !important; display: none !important;}
-    .block-container {
-        padding-top: 2rem;
-        padding-bottom: 0rem;
-    }
-    /* Custom button styling for Recommend button */
-    button[kind="primary"] {
-        background-color: white !important;
-        color: black !important;
-        border: 2px solid #e0e0e0 !important;
-    }
-    /* Center spinner text */
-    .stSpinner > div {
-        text-align: center !important;
-        justify-content: center !important;
-        align-items: center !important;
-    }
-    .stSpinner > div > div {
-        text-align: center !important;
-        margin: 0 auto !important;
-    }
-    [data-testid="stSpinner"] {
-        text-align: center !important;
-    }
-    [data-testid="stSpinner"] > div {
-        text-align: center !important;
-        justify-content: center !important;
-    }
-    /* Fade-in animation for newly loaded albums */
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(40px) scale(0.95);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
-    }
-    .fade-in {
-        animation: fadeIn 1s ease-out;
-    }
-    /* Subtle page load animation for initial elements */
-    @keyframes pageLoad {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    .block-container > div {
-        animation: pageLoad 0.6s ease-out;
-    }
-    h1 {
-        animation: pageLoad 0.8s ease-out;
-    }
-    .stTextInput {
-        animation: pageLoad 1s ease-out;
-    }
-    button {
-        animation: pageLoad 1.2s ease-out;
-    }
-    /* NUCLEAR OPTION - Override ALL Streamlit height constraints */
-    .stMarkdown,
-    [data-testid="stMarkdown"],
-    [data-testid="stMarkdownContainer"],
-    [data-testid="stMarkdown"] > div,
-    [data-testid="stMarkdownContainer"] > div,
-    div[data-testid="stMarkdownContainer"] > div {
-        height: auto !important;
-        min-height: 0 !important;
-        max-height: none !important;
-        overflow: visible !important;
-    }
-    /* Force images to display fully */
-    [data-testid="stMarkdown"] img,
-    [data-testid="stMarkdownContainer"] img {
-        max-height: none !important;
-        height: auto !important;
-        display: block !important;
-    }
-    /* Remove all height constraints from parent containers */
-    [data-testid="stVerticalBlock"], 
-    [data-testid="stColumn"],
-    .stElementContainer,
-    .element-container {
-        height: auto !important;
-        max-height: none !important;
-        min-height: 0 !important;
-        overflow: visible !important;
-    }
-</style>
-""", unsafe_allow_html=True)
+with open("app_styles.css") as f:
+    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 
 @st.cache_data(ttl=3600)
@@ -279,33 +175,7 @@ placeholder_examples = [
 if 'placeholder_text' not in st.session_state:
     st.session_state.placeholder_text = random.choice(placeholder_examples)
 
-# Text input with larger styling and centered label
-st.markdown("""
-<style>
-    input {
-        font-size: 18px !important;
-        padding: 12px !important;
-    }
-    input::placeholder {
-        font-size: 14px !important;
-        font-style: italic;
-        animation: placeholderFade 0.8s ease-in;
-    }
-    @keyframes placeholderFade {
-        from {
-            opacity: 0;
-        }
-        to {
-            opacity: 0.6;
-        }
-    }
-    label[data-testid="stTextInputLabel"] {
-        text-align: center;
-        display: block;
-        font-size: 16px;
-    }
-</style>
-""", unsafe_allow_html=True)
+
 
 user_prompt = st.text_input(
     "What kind of music are you looking for?",
