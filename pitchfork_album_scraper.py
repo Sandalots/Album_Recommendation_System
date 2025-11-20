@@ -8,6 +8,7 @@ import re
 from typing import List, Dict
 import csv
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import os
 
 
 class PitchforkSeleniumScraper:
