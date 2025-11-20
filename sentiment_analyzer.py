@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 from transformers import pipeline
 import re
 from collections import Counter
