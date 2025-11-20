@@ -18,11 +18,11 @@ negative_words = ['disappointing', 'weak', 'boring', 'forgettable', 'mediocre', 
 
 musical_terms = ['beat', 'melody', 'production', 'vocal', 'instrumental', 'rhythm', 'bass',
                  'guitar', 'drums', 'sound', 'track', 'arrangement', 'composition', 'performance',
-                'harmony', 'chord', 'tempo', 'groove', 'riff', 'synthesizer', 'mixing',
-                'mastering', 'verse', 'chorus', 'bridge', 'outro', 'intro', 'hook', 'melody',
-                'percussion', 'instrumentation', 'timbre', 'texture', 'dynamics', 'crescendo',
-                'diminuendo', 'cadence', 'phrasing', 'articulation', 'vibrato', 'sustain',
-                'reverb', 'delay', 'distortion', 'compression', 'eq', 'equalization']
+                 'harmony', 'chord', 'tempo', 'groove', 'riff', 'synthesizer', 'mixing',
+                 'mastering', 'verse', 'chorus', 'bridge', 'outro', 'intro', 'hook', 'melody',
+                 'percussion', 'instrumentation', 'timbre', 'texture', 'dynamics', 'crescendo',
+                 'diminuendo', 'cadence', 'phrasing', 'articulation', 'vibrato', 'sustain',
+                 'reverb', 'delay', 'distortion', 'compression', 'eq', 'equalization']
 
 descriptive_words = ['atmospheric', 'raw', 'polished', 'experimental', 'nostalgic', 'modern',
                      'minimalist', 'dense', 'intimate', 'grandiose', 'subtle', 'bold', 'delicate',
