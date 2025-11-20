@@ -334,96 +334,78 @@ class ReviewAnalyser:
         print(
             f"Using '{text_column}' column for sentiment analysis (preprocessed text)\n")
 
-        sentiments = []
-        key_highlights = []
-        summaries = []
-        themes_list = []
-        lyrical_themes_list = []
-        comparisons_list = []
-        musical_chars_list = []
-        instrumentation_list = []
-        production_quality_list = []
-        mood_energy_list = []
-        polarizing_list = []
-        novelty_scores = []
-        temporal_context_list = []
-        context_indicators_list = []
 
-        for idx, row in df_sample.iterrows():
-            if idx % 50 == 0:
-                print(
-                    f"  Sentiment processed for {idx}/{len(df_sample)} album reviews...")
 
-            # Use preprocessed text for sentiment analysis (more accurate)
-            text_processed = str(row[text_column]) if pd.notna(
-                row[text_column]) else ''
-            # Use original text for highlights extraction (more readable)
-            text_original = str(row['review_text']) if pd.notna(
-                row['review_text']) else ''
+        import os
+        from concurrent.futures import ThreadPoolExecutor, as_completed
 
-            # Sentiment on preprocessed text (better accuracy)
+        def process_review(row):
+            text_processed = str(row[text_column]) if pd.notna(row[text_column]) else ''
+            text_original = str(row['review_text']) if pd.notna(row['review_text']) else ''
             sentiment = self.analyze_sentiment(text_processed)
-            sentiments.append(sentiment)
-
-            # Highlights from original text (more readable)
-            highlights = self.extract_key_sentences(
-                text_original, num_sentences=4)
-            key_highlights.append(' | '.join(highlights))
-
-            # Theme extraction from original text (needs context)
+            highlights = self.extract_key_sentences(text_original, num_sentences=4)
             themes = self.extract_themes(text_original)
-            themes_list.append(', '.join(themes) if themes else 'general')
-
             lyrical_themes = self.extract_lyrical_themes(text_original)
-            lyrical_themes_list.append(
-                ', '.join(lyrical_themes) if lyrical_themes else '')
-
             comparisons = self.extract_comparative_context(text_original)
-            comparisons_list.append(
-                ', '.join(comparisons) if comparisons else '')
-
             musical_chars = self.extract_musical_characteristics(text_original)
-            musical_chars_str = ', '.join(
-                [f"{k}:{v:.1f}" for k, v in musical_chars.items()])
-            musical_chars_list.append(musical_chars_str)
-
-            # NEW ANALYSES
-            # Instrumentation
+            musical_chars_str = ', '.join([f"{k}:{v:.1f}" for k, v in musical_chars.items()])
             instruments = self.extract_instrumentation(text_original)
-            instrumentation_list.append(
-                ', '.join(instruments) if instruments else '')
-
-            # Production quality
             prod_quality = self.extract_production_quality(text_original)
-            production_quality_list.append(
-                f"quality:{prod_quality['quality']}, style:{prod_quality['style']}")
-
-            # Mood and energy
             mood_energy = self.extract_mood_energy(text_original)
-            mood_str = ', '.join(
-                mood_energy['mood']) if mood_energy['mood'] else 'neutral'
+            mood_str = ', '.join(mood_energy['mood']) if mood_energy['mood'] else 'neutral'
             energy_str = ['low', 'medium', 'high'][mood_energy['energy'] + 1]
-            mood_energy_list.append(f"{mood_str}, energy: {energy_str}")
-
-            # Polarizing language
             is_polarizing = self.detect_polarizing_language(text_original)
-            polarizing_list.append(is_polarizing)
-
-            # Novelty indicators
             novelty_score = self.extract_novelty_indicators(text_original)
-            novelty_scores.append(novelty_score)
-
-            # Temporal context
             release_year = row.get('release_year', 2000)
-            temporal = self.extract_temporal_context(
-                text_original, release_year)
-            temporal_context_list.append(
-                f"era:{temporal['era_sound']}, throwback:{temporal['throwback']}")
-
-            # Context indicators
+            temporal = self.extract_temporal_context(text_original, release_year)
             contexts = self.extract_context_indicators(text_original)
-            context_indicators_list.append(
-                ', '.join(contexts) if contexts else '')
+            return {
+                'sentiment': sentiment,
+                'key_highlights': ' | '.join(highlights),
+                'themes': ', '.join(themes) if themes else 'general',
+                'lyrical_themes': ', '.join(lyrical_themes) if lyrical_themes else '',
+                'comparisons': ', '.join(comparisons) if comparisons else '',
+                'musical_chars': musical_chars_str,
+                'instrumentation': ', '.join(instruments) if instruments else '',
+                'production_quality': f"quality:{prod_quality['quality']}, style:{prod_quality['style']}",
+                'mood_energy': f"{mood_str}, energy: {energy_str}",
+                'is_polarizing': is_polarizing,
+                'novelty_score': novelty_score,
+                'temporal_context': f"era:{temporal['era_sound']}, throwback:{temporal['throwback']}",
+                'listening_contexts': ', '.join(contexts) if contexts else ''
+            }
+
+        results = []
+
+        num_workers = os.cpu_count() or 4
+        print(f"Using {num_workers} threads for parallel sentiment analysis.")
+        with ThreadPoolExecutor(max_workers=num_workers) as executor:
+            future_to_idx = {executor.submit(process_review, row): idx for idx, row in df_sample.iterrows()}
+            for i, future in enumerate(as_completed(future_to_idx)):
+                idx = future_to_idx[future]
+                if i % 50 == 0:
+                    print(f"  Sentiment processed for {i}/{len(df_sample)} album reviews...")
+                try:
+                    results.append((idx, future.result()))
+                except Exception as e:
+                    print(f"Error processing review {idx}: {e}")
+                    results.append((idx, None))
+
+        # Sort results by index to preserve order
+        results.sort(key=lambda x: x[0])
+        sentiments = [r[1]['sentiment'] if r[1] else {'label': 'NEUTRAL', 'score': 0.5} for r in results]
+        key_highlights = [r[1]['key_highlights'] if r[1] else '' for r in results]
+        themes_list = [r[1]['themes'] if r[1] else 'general' for r in results]
+        lyrical_themes_list = [r[1]['lyrical_themes'] if r[1] else '' for r in results]
+        comparisons_list = [r[1]['comparisons'] if r[1] else '' for r in results]
+        musical_chars_list = [r[1]['musical_chars'] if r[1] else '' for r in results]
+        instrumentation_list = [r[1]['instrumentation'] if r[1] else '' for r in results]
+        production_quality_list = [r[1]['production_quality'] if r[1] else '' for r in results]
+        mood_energy_list = [r[1]['mood_energy'] if r[1] else '' for r in results]
+        polarizing_list = [r[1]['is_polarizing'] if r[1] else False for r in results]
+        novelty_scores = [r[1]['novelty_score'] if r[1] else 0 for r in results]
+        temporal_context_list = [r[1]['temporal_context'] if r[1] else '' for r in results]
+        context_indicators_list = [r[1]['listening_contexts'] if r[1] else '' for r in results]
 
         print(
             f"✓ Completed sentiment analysis for {len(df_sample)} album reviews\n")
