@@ -338,7 +338,8 @@ class EnhancedRecommender:
         
         # If we find exact matches, boost them significantly
         if not exact_matches.empty:
-            print(f"Found {len(exact_matches)} exact name matches")
+            # print(f"Found {len(exact_matches)} exact name matches")  # Hidden from log
+            pass
         
         # Get initial larger pool of candidates
         user_embedding = self.model.encode([mood_description])

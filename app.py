@@ -1,6 +1,4 @@
 import os
-os.environ['PYTHONWARNINGS'] = 'ignore'
-
 import streamlit as st
 from recommender_model import EnhancedRecommender
 import requests
@@ -10,6 +8,8 @@ import warnings
 import logging
 import sys
 import random
+
+os.environ['PYTHONWARNINGS'] = 'ignore'
 
 # Suppress all warnings at multiple levels
 warnings.filterwarnings('ignore')

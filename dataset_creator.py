@@ -1,12 +1,16 @@
 import pandas as pd
 import re
 import nltk
+import pandas as pd
+import re
+import nltk
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer, PorterStemmer
 from nltk.tokenize import word_tokenize
 import string
 import html
 import warnings
+
 warnings.filterwarnings('ignore')
 
 # Download required NLTK data
@@ -25,7 +29,10 @@ print("="*80)
 print("ALBUM DATASET PREPROCESSING")
 print("="*80 + "\n")
 
+
 df = pd.read_csv('outputs/pitchfork_reviews.csv')
+# Fill missing artist names with 'Various Artists'
+df['artist_name'] = df['artist_name'].fillna('Various Artists')
 
 print("Original Dataset Info:")
 print(f"  Shape: {df.shape}")
