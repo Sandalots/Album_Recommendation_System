@@ -4,6 +4,9 @@ import re
 from collections import Counter
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from transformers import logging
+
+logging.set_verbosity_error()
 
 # from the sentiment directory, retrieve the following sentiment matching keywords rules;
 from sentiment.sentiment_keywords import (
@@ -369,7 +372,7 @@ class ReviewAnalyser:
                 idx = future_to_idx[future]
                 # Only print every 500 reviews
                 if i % 500 == 0:
-                    print(f"Processed {i}/{len(df_sample)} reviews...")
+                    print(f"Processed {i}/{len(df_sample)} album reviews sentiment...")
                 try:
                     results.append((idx, future.result()))
                 except Exception as e:
@@ -392,7 +395,7 @@ class ReviewAnalyser:
         temporal_context_list = [r[1]['temporal_context'] if r[1] else '' for r in results]
         context_indicators_list = [r[1]['listening_contexts'] if r[1] else '' for r in results]
 
-        print(f"✓ Sentiment analysis complete for {len(df_sample)} reviews.")
+        print(f"\n✓ Sentiment analysis complete for {len(df_sample)} reviews.")
 
         # Existing columns
         df_sample['sentiment_label'] = [s['label'] for s in sentiments]
@@ -423,9 +426,9 @@ class ReviewAnalyser:
         if 'score_category' in df_sample.columns:
             print("Average sentiment score by album rating category:")
             print(df_sample.groupby('score_category')['sentiment_score'].mean())
-        print(f"Polarizing/Divisive Albums: {df_sample['is_polarizing'].sum()} ({df_sample['is_polarizing'].sum()/len(df_sample)*100:.1f}%)")
-        print(f"Novelty - Innovative: {(df_sample['novelty_score'] > 0).sum()}, Derivative: {(df_sample['novelty_score'] < 0).sum()}, Neutral: {(df_sample['novelty_score'] == 0).sum()}")
-        print("Saving enhanced dataset...")
+        print(f"\nPolarizing/Divisive Albums: {df_sample['is_polarizing'].sum()} ({df_sample['is_polarizing'].sum()/len(df_sample)*100:.1f}%)")
+        print(f"\nNovelty - Innovative: {(df_sample['novelty_score'] > 0).sum()}, Derivative: {(df_sample['novelty_score'] < 0).sum()}, Neutral: {(df_sample['novelty_score'] == 0).sum()}")
+        print("\nSaving sentiment analysed pitchfork reviews dataset...")
         os.makedirs('outputs', exist_ok=True)
         df_sample.to_csv(
             'outputs/pitchfork_reviews_preprocessed_plus_sentiments.csv', index=False)
@@ -435,7 +438,7 @@ class ReviewAnalyser:
 
     def show_examples(self, num_examples=3):
         print("\n" + "="*80)
-        print("EXAMPLE ANALYZED REVIEWS")
+        print("EXAMPLE ANALYZED ALBUM REVIEWS")
         print("="*80 + "\n")
 
         df_analyzed = pd.read_csv(
@@ -463,8 +466,6 @@ class ReviewAnalyser:
 
 
 def main():
-    print("Starting full dataset analysis...")
-
     # Use outputs directory for all files
     data_path = 'outputs/pitchfork_reviews_preprocessed.csv'
     output_path = 'outputs/pitchfork_reviews_preprocessed_plus_sentiments.csv'
@@ -473,7 +474,7 @@ def main():
     analyzer.load_models()
     analyzer.analyze_all_reviews()
 
-    print(f"\n✓ Complete! All albums analyzed and saved to '{output_path}'")
+    print(f"✓ Complete! All albums sentiment analyzed and saved to '{output_path}'")
 
     analyzer.show_examples(num_examples=5)
 

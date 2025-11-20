@@ -9,39 +9,36 @@ import html
 import os
 
 
-# Download required NLTK data
-print("Downloading NLTK resources...")
+# Ensure NLTK resources are available
+def ensure_nltk_resource(resource):
+    try:
+        nltk.data.find(resource)
+    except LookupError:
+        nltk.download(resource.split('/')[-1], quiet=True)
 
-try:
-    nltk.download('punkt', quiet=True)
-    nltk.download('stopwords', quiet=True)
-    nltk.download('wordnet', quiet=True)
-    nltk.download('averaged_perceptron_tagger', quiet=True)
-    nltk.download('punkt_tab', quiet=True)
-    print("✓ NLTK resources ready\n")
 
-except:
-    print("⚠ Some NLTK resources may be missing\n")
+print("Checking NLTK resources...")
 
-print("="*80)
-print("ALBUM DATASET PREPROCESSING")
-print("="*80 + "\n")
+ensure_nltk_resource('tokenizers/punkt')
+ensure_nltk_resource('corpora/stopwords')
+ensure_nltk_resource('corpora/wordnet')
+ensure_nltk_resource('taggers/averaged_perceptron_tagger')
+
+print("NLTK resources ready.\n")
+
+print("=== Scrapped Album Reviews Dataset Preprocessing ===\n")
 
 
 df = pd.read_csv('outputs/pitchfork_reviews_raw.csv')
 # Fill missing artist names with 'Various Artists'
 df['artist_name'] = df['artist_name'].fillna('Various Artists')
 
-print("Original Dataset Info:")
-print(f"  Shape: {df.shape}")
-print(f"  Columns: {df.columns.tolist()}\n")
+print(f"Dataset shape: {df.shape}")
 
 missing_values = df.isnull().sum()
-print(f"Missing values per column:\n{missing_values}\n")
+print(f"Missing values: {missing_values.sum()}")
 
-print("="*80)
-print("STEP 1: Basic Cleaning")
-print("="*80)
+print("Step 1: Basic cleaning")
 
 df['genre'] = df['genre'].fillna('Unknown')
 mean_score = df['score'].astype(float).mean()
@@ -50,15 +47,9 @@ median_year = df['release_year'].astype(float).median()
 df['release_year'] = df['release_year'].fillna(median_year)
 df['review_text'] = df['review_text'].fillna('')
 
-print("✓ Filled missing values")
-print(f"  - Genre: 'Unknown'")
-print(f"  - Score: {mean_score:.2f} (mean)")
-print(f"  - Year: {median_year:.0f} (median)")
-print(f"  - Review text: empty string\n")
+print("Filled missing values.\n")
 
-print("="*80)
-print("STEP 2: Text Preprocessing & Normalization")
-print("="*80)
+print("Step 2: Text preprocessing & normalization")
 
 # Initialize text processing tools
 lemmatizer = WordNetLemmatizer()
@@ -117,13 +108,7 @@ def preprocess_text(text):
     return processed_text, stemmed_text, text_clean
 
 
-print("Processing review texts...")
-print("  - Lowercasing")
-print("  - Removing URLs, emails, special characters")
-print("  - Tokenizing")
-print("  - Removing stopwords (keeping music-relevant terms)")
-print("  - Lemmatizing (preserving word meaning)")
-print("  - Stemming (reducing to root forms)")
+print("Processing album review texts...")
 
 # Apply preprocessing
 text_processing = df['review_text'].apply(preprocess_text)
@@ -132,14 +117,7 @@ df['review_text_processed'] = text_processing.apply(lambda x: x[0])
 df['review_text_stemmed'] = text_processing.apply(lambda x: x[1])
 df['review_text_clean'] = text_processing.apply(lambda x: x[2])
 
-print(f"✓ Created processed text columns:")
-print(f"  - review_text_clean: Normalized, cleaned text")
-print(f"  - review_text_processed: Lemmatized without stopwords")
-print(f"  - review_text_stemmed: Stemmed for maximum efficiency\n")
-
-print("="*80)
-print("STEP 3: Advanced Feature Engineering")
-print("="*80)
+print("Processed text columns created.\n")
 
 print("="*80)
 print("STEP 3: Advanced Feature Engineering")
@@ -179,19 +157,7 @@ df['artist_name_clean'] = df['artist_name'].str.lower().str.strip()
 df['album_name_clean'] = df['album_name'].str.lower().str.strip()
 df['album_title_length'] = df['album_name'].str.len()
 
-print(f"✓ Created comprehensive features:")
-print(f"  Text Features:")
-print(f"    - review_length, word_count, processed_word_count")
-print(f"    - unique_word_ratio (vocabulary diversity)")
-print(f"    - avg_word_length, exclamation_count, question_count")
-print(f"  Normalized Features:")
-print(f"    - score_normalized (0-1 scale)")
-print(f"    - release_year_normalized (0-1 scale)")
-print(f"  Categorical Features:")
-print(f"    - score_category, decade, primary_genre")
-print(f"  Metadata Features:")
-print(f"    - genre_count, album_title_length")
-print(f"    - artist_name_clean, album_name_clean\n")
+print("Advanced album review features created.\n")
 
 print("="*80)
 print("STEP 4: Data Quality Checks & Outlier Detection")
@@ -229,9 +195,6 @@ print(df['score_category'].value_counts().sort_index())
 print(f"\nTop 10 Genres:")
 print(df['primary_genre'].value_counts().head(10))
 
-print(f"\nDecade Distribution:")
-print(df['decade'].value_counts().sort_index())
-
 print(f"\nReview Text Stats:")
 print(f"  Original:")
 print(f"    Average length: {df['review_length'].mean():.0f} characters")
@@ -245,7 +208,7 @@ print(
     f"    Average word length: {df['avg_word_length'].mean():.2f} characters")
 
 print(f"\n" + "="*80)
-print("Saving preprocessed dataset...")
+print("Saving preprocessed pitchfork reviews dataset...")
 print("="*80)
 
 # Ensure outputs directory exists
