@@ -3,6 +3,8 @@ from transformers import pipeline
 import re
 from collections import Counter
 import warnings
+
+# from the sentiment directory, retrieve the following sentiment matching keywords rules;
 from sentiment.sentiment_keywords import (
     positive_words, negative_words, musical_terms, descriptive_words,
     intensity_modifiers, char_patterns, instrument_keywords, quality_indicators,
