@@ -8,7 +8,7 @@ warnings.filterwarnings('ignore')
 
 class ReviewAnalyser:
     def __init__(self, data_path='outputs/pitchfork_reviews_preprocessed.csv'):
-        print("Loading dataset...")
+        print("Loading album reviews dataset for sentiment analysis...")
         self.df = pd.read_csv(data_path)
         self.sentiment_analyzer = None
         self.summarizer = None
@@ -19,7 +19,7 @@ class ReviewAnalyser:
             self.df['review_text_processed'] = self.df['review_text']
         
     def load_models(self):
-        print("\nLoading sentiment analysis model...")
+        print("\nLoading model for album review sentiment analysis...")
         self.sentiment_analyzer = pipeline(
             "sentiment-analysis",
             model="distilbert-base-uncased-finetuned-sst-2-english",
@@ -33,7 +33,7 @@ class ReviewAnalyser:
             device=-1
         )
         
-        print("✓ Models loaded\n")
+        print("✓ Sentiment and summarization models loaded for album reviews\n")
     
     def analyze_sentiment(self, text, max_length=512):
         if not text or len(text.strip()) == 0:
@@ -518,15 +518,15 @@ class ReviewAnalyser:
     
     def analyze_all_reviews(self):
         print("="*80)
-        print("ANALYZING ALBUM REVIEWS")
+        print("ALBUM REVIEWS SENTIMENT ANALYSIS")
         print("="*80 + "\n")
         
         df_sample = self.df
-        print(f"Analyzing all {len(df_sample)} reviews...\n")
+        print(f"Analyzing sentiment for all {len(df_sample)} album reviews...\n")
         
         # Use preprocessed text for efficiency (lemmatized version)
         text_column = 'review_text_processed' if 'review_text_processed' in df_sample.columns else 'review_text'
-        print(f"Using '{text_column}' column for analysis (preprocessed text)\n")
+        print(f"Using '{text_column}' column for sentiment analysis (preprocessed text)\n")
         
         sentiments = []
         key_highlights = []
@@ -545,7 +545,7 @@ class ReviewAnalyser:
         
         for idx, row in df_sample.iterrows():
             if idx % 50 == 0:
-                print(f"  Processed {idx}/{len(df_sample)} reviews...")
+                print(f"  Sentiment processed for {idx}/{len(df_sample)} album reviews...")
             
             # Use preprocessed text for sentiment analysis (more accurate)
             text_processed = str(row[text_column]) if pd.notna(row[text_column]) else ''
@@ -606,7 +606,7 @@ class ReviewAnalyser:
             contexts = self.extract_context_indicators(text_original)
             context_indicators_list.append(', '.join(contexts) if contexts else '')
         
-        print(f"✓ Completed analysis of {len(df_sample)} reviews\n")
+        print(f"✓ Completed sentiment analysis for {len(df_sample)} album reviews\n")
         
         # Existing columns
         df_sample['sentiment_label'] = [s['label'] for s in sentiments]
@@ -630,12 +630,12 @@ class ReviewAnalyser:
         df_sample['critical_consensus'] = df_sample.apply(self.analyze_critical_consensus, axis=1)
         
         print("="*80)
-        print("SENTIMENT ANALYSIS RESULTS")
+        print("ALBUM REVIEWS SENTIMENT ANALYSIS RESULTS")
         print("="*80)
-        print(f"\nSentiment Distribution:")
+        print(f"\nAlbum Review Sentiment Distribution:")
         print(df_sample['sentiment_label'].value_counts())
         
-        print(f"\nAverage Sentiment Score by Rating Category:")
+        print(f"\nAverage Sentiment Score by Album Rating Category:")
         if 'score_category' in df_sample.columns:
             sentiment_by_score = df_sample.groupby('score_category')['sentiment_score'].mean()
             print(sentiment_by_score)

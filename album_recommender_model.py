@@ -8,22 +8,22 @@ import os
 
 class EnhancedRecommender:
     def __init__(self, data_path='outputs/pitchfork_reviews_preprocessed_plus_sentiments.csv'):
-        print("Loading analyzed dataset...")
+        print("Loading analyzed album reviews dataset for recommendation model...")
         self.df = pd.read_csv(data_path)
         self.vectorizer = None
         self.tfidf_matrix = None
         self.embeddings = None
         self.model = None
-        print(f"✓ Loaded {len(self.df)} albums with sentiment & themes among other analyses\n")
+        print(f"✓ Loaded {len(self.df)} albums with sentiment, themes, and other features for recommendation\n")
         
         # Check if enhanced preprocessing features are available
         self.has_enhanced_features = all(col in self.df.columns for col in 
             ['review_text_processed', 'unique_word_ratio', 'score_normalized'])
         if self.has_enhanced_features:
-            print("✓ Enhanced preprocessing features detected\n")
+            print("✓ Enhanced preprocessing features detected for album reviews\n")
         
     def build_models(self):
-        print("Building recommendation models...")
+        print("Building album recommendation models using sentiment, TF-IDF, and semantic features...")
         
         # Create enriched feature vectors with all available information
         feature_components = [
@@ -64,12 +64,12 @@ class EnhancedRecommender:
         
         # If enhanced preprocessing is available, use processed text for better TF-IDF
         if self.has_enhanced_features and 'review_text_processed' in self.df.columns:
-            print("  Using preprocessed text for TF-IDF (lemmatized)...")
+            print("  Using preprocessed album review text for TF-IDF (lemmatized)...")
             # Add processed review text to features for better matching
             self.df['combined_features'] = (self.df['combined_features'] + ' ' + 
                                            self.df['review_text_processed'].fillna(''))
         
-        print("  Building TF-IDF model with enhanced features...")
+        print("  Building TF-IDF model using genres, album title, artist name, score, release year, themes, key highlights, sentiment, mood, instrumentation, production quality, listening context, novelty, and processed review text for rich album recommendations...")
         self.vectorizer = TfidfVectorizer(
             max_features=8000,  # Increased from 5000
             stop_words='english', 
@@ -79,7 +79,7 @@ class EnhancedRecommender:
         )
         self.tfidf_matrix = self.vectorizer.fit_transform(self.df['combined_features'])
         
-        print("  Building semantic embeddings...")
+        print("  Building semantic embeddings for album reviews...")
         self.model = SentenceTransformer('all-MiniLM-L6-v2')
         
         # Create richer text for embeddings including artist and album names
@@ -118,7 +118,7 @@ class EnhancedRecommender:
             batch_size=32
         )
         
-        print("✓ Models built\n")
+        print("✓ Album recommendation models built (TF-IDF, semantic, sentiment, and feature-based)\n")
     
     def recommend_by_mood(self, mood_description, top_n=5, sentiment_filter=None, min_score=None):
         """
@@ -422,7 +422,7 @@ class EnhancedRecommender:
     
     def display_recommendations(self, recommendations):
         print("\n" + "="*80)
-        print("ALBUM RECOMMENDATIONS")
+        print("ALBUM RECOMMENDATIONS (TF-IDF, Sentiment, Semantic)")
         print("="*80 + "\n")
         
         if len(recommendations) == 0:

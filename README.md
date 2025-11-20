@@ -33,6 +33,7 @@ python pitchfork_album_scraper.py  # Scrape reviews, (DO NOT RUN UNLESS YOU REAL
 python album_reviews_dataset_creator.py # Preprocess with NLTK and turn into a dataset
 python album_reviews_text_sentiment_analyser.py # Analyze (8+ feature types) from review texts
 python album_recommender_model.py # builds the model and recommends albums based on given prompt
+
 streamlit run album_recommender_prompt_app.py # Launches a streamlit UI to allow users to prompt the created model for album recommendations
 ```
 
