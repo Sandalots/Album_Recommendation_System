@@ -9,13 +9,11 @@ import pickle
 
 class EnhancedRecommender:
     def __init__(self, data_path='outputs/pitchfork_reviews_preprocessed_plus_sentiments.csv'):
-        # Loading silently
         self.df = pd.read_csv(data_path)
         self.vectorizer = None
         self.tfidf_matrix = None
         self.embeddings = None
         self.model = None
-        # Loaded silently
 
         # Check if enhanced preprocessing features are available
         self.has_enhanced_features = all(col in self.df.columns for col in

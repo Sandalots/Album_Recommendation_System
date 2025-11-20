@@ -1,12 +1,16 @@
+/* Album Recommender Streamlit System Custom Styles */
+
 input {
     font-size: 18px !important;
     padding: 12px !important;
 }
+
 input::placeholder {
     font-size: 14px !important;
     font-style: italic;
     animation: placeholderFade 0.8s ease-in;
 }
+
 @keyframes placeholderFade {
     from {
         opacity: 0;
@@ -15,48 +19,92 @@ input::placeholder {
         opacity: 0.6;
     }
 }
+
 label[data-testid="stTextInputLabel"] {
     text-align: center;
     display: block;
     font-size: 16px;
 }
-/* Album Recommender System Custom Styles */
-#MainMenu {visibility: hidden !important; display: none !important;}
-header {visibility: hidden !important; display: none !important;}
-footer {visibility: hidden !important; display: none !important;}
-[data-testid="stToolbar"] {visibility: hidden !important; display: none !important;}
-.stDeployButton {visibility: hidden !important; display: none !important;}
-button[kind="header"] {visibility: hidden !important; display: none !important;}
+
+#MainMenu {
+    visibility: hidden !important;
+    display: none !important;
+}
+
+header {
+    visibility: hidden !important;
+    display: none !important;
+}
+
+footer {
+    visibility: hidden !important;
+    display: none !important;
+}
+
+[data-testid="stToolbar"] {
+    visibility: hidden !important;
+    display: none !important;
+}
+
+.stDeployButton {
+    visibility: hidden !important;
+    display: none !important;
+}
+
+button[kind="header"] {
+    visibility: hidden !important;
+    display: none !important;
+}
+
 .block-container {
     padding-top: 2rem;
     padding-bottom: 0rem;
 }
+
 button[kind="primary"] {
     background-color: white !important;
     color: black !important;
     border: 2px solid #e0e0e0 !important;
 }
+
 .stSpinner > div {
     text-align: center !important;
     justify-content: center !important;
     align-items: center !important;
 }
+
 .stSpinner > div > div {
     text-align: center !important;
     margin: 0 auto !important;
 }
+
 [data-testid="stSpinner"] {
     text-align: center !important;
 }
+
 [data-testid="stSpinner"] > div {
     text-align: center !important;
     justify-content: center !important;
 }
+
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(40px) scale(0.95); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
+    from {
+        opacity: 0;
+        transform: translateY(40px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
+
 @keyframes pageLoad {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

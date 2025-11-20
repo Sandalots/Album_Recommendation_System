@@ -142,19 +142,6 @@ class PitchforkSeleniumScraper:
                         break
 
             if not genre_found:
-                scripts = soup.find_all('script', type='application/ld+json')
-                for script in scripts:
-                    try:
-                        import json as json_lib
-                        data = json_lib.loads(script.string)
-                        if isinstance(data, dict) and 'genre' in data:
-                            review_data['genre'] = data['genre']
-                            genre_found = True
-                            break
-                    except:
-                        pass
-
-            if not genre_found:
                 html = self.driver.page_source
                 genre_match = re.search(r'"genre"\s*:\s*"([^"]+)"', html)
                 if genre_match:
