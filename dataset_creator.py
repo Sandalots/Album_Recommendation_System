@@ -30,7 +30,7 @@ print("ALBUM DATASET PREPROCESSING")
 print("="*80 + "\n")
 
 
-df = pd.read_csv('outputs/pitchfork_reviews.csv')
+df = pd.read_csv('outputs/pitchfork_reviews_raw.csv')
 # Fill missing artist names with 'Various Artists'
 df['artist_name'] = df['artist_name'].fillna('Various Artists')
 
