@@ -125,17 +125,44 @@ for prompt in all_prompts:
             r['artist'] = r.get('author', 'Unknown')
     all_recs_by_prompt[prompt] = [r['album'] for r in recs]
 
-# For each prompt, pick 2 from its own recs and 1-2 from other prompts
+# For each prompt, pick a random number (2-5) from its own recs and 1-3 from other prompts for ground truth
 for prompt in all_prompts:
     own_recs = all_recs_by_prompt[prompt]
-    n_own = min(2, len(own_recs))
+    n_own = random.randint(2, min(5, len(own_recs))) if own_recs else 0
     own_truth = random.sample(own_recs, n_own) if own_recs else []
     other_prompts = [p for p in all_prompts if p != prompt and all_recs_by_prompt[p]]
     other_albums = [album for p in other_prompts for album in all_recs_by_prompt[p]]
-    n_other = random.choice([1, 2]) if len(other_albums) >= 2 else len(other_albums)
+    n_other = random.randint(1, 3) if len(other_albums) >= 3 else len(other_albums)
     other_truth = random.sample(other_albums, n_other) if other_albums else []
     ground_truth = own_truth + other_truth
     prompt_ground_truth[prompt] = ground_truth
+# --------- Additional Metrics: nDCG@5, MRR@5 ---------
+import numpy as np
+
+def dcg_at_k(recommended, ground_truth, k=5):
+    dcg = 0.0
+    gt_norm = [normalize_album_name(a) for a in ground_truth]
+    for i, rec in enumerate(recommended[:k]):
+        if normalize_album_name(rec['album']) in gt_norm:
+            dcg += 1.0 / (np.log2(i + 2))
+    return dcg
+
+def ndcg_at_k(row, k=5):
+    recommended = row['recommended_albums']
+    ground_truth = row['ground_truth_albums']
+    ideal = min(len(ground_truth), k)
+    if ideal == 0:
+        return None
+    idcg = sum(1.0 / (np.log2(i + 2)) for i in range(ideal))
+    dcg = dcg_at_k(recommended, ground_truth, k)
+    return dcg / idcg if idcg > 0 else 0.0
+
+def mrr_at_k(row, k=5):
+    gt_norm = [normalize_album_name(a) for a in row['ground_truth_albums']]
+    for i, rec in enumerate(row['recommended_albums'][:k]):
+        if normalize_album_name(rec['album']) in gt_norm:
+            return 1.0 / (i + 1)
+    return 0.0
 
 data = []
 for prompt in all_prompts:
@@ -181,14 +208,36 @@ def precision_at_k(row, k=5):
 # Filter out prompts with empty ground truth lists
 df['recall_at_5'] = df.apply(lambda row: recall_at_k(row, 5), axis=1)
 df['precision_at_5'] = df.apply(lambda row: precision_at_k(row, 5), axis=1)
+df['ndcg_at_5'] = df.apply(lambda row: ndcg_at_k(row, 5), axis=1)
+df['mrr_at_5'] = df.apply(lambda row: mrr_at_k(row, 5), axis=1)
 df_nonempty = df[df['ground_truth_albums'].apply(lambda x: isinstance(x, list) and len(x) > 0)].copy()
 
 print("\nPerformance Metrics (Prompt-based, Top-5):")
+print("First 5 nDCG@5 values:", df_nonempty['ndcg_at_5'].head().tolist())
+print("First 5 MRR@5 values:", df_nonempty['mrr_at_5'].head().tolist())
 if not df_nonempty.empty:
     print(f"Mean Recall@5: {df_nonempty['recall_at_5'].mean():.3f}")
     print(f"Mean Precision@5: {df_nonempty['precision_at_5'].mean():.3f}")
+    print(f"Mean nDCG@5: {df_nonempty['ndcg_at_5'].mean():.3f}")
+    print(f"Mean MRR@5: {df_nonempty['mrr_at_5'].mean():.3f}")
 else:
     print("No prompts with non-empty ground truths to evaluate.")
+
+# Per-genre breakdown (if genre info is available in recommendations)
+genre_metrics = {}
+for idx, row in df_nonempty.iterrows():
+    genres = [r.get('genre') for r in row['recommended_albums'] if 'genre' in r and r['genre']]
+    for genre in set(genres):
+        if genre not in genre_metrics:
+            genre_metrics[genre] = {'recall': [], 'precision': [], 'ndcg': [], 'mrr': []}
+        genre_metrics[genre]['recall'].append(row['recall_at_5'])
+        genre_metrics[genre]['precision'].append(row['precision_at_5'])
+        genre_metrics[genre]['ndcg'].append(row['ndcg_at_5'])
+        genre_metrics[genre]['mrr'].append(row['mrr_at_5'])
+if genre_metrics:
+    print("\nPer-genre average metrics (for genres present in recommendations):")
+    for genre, vals in genre_metrics.items():
+        print(f"  {genre}: Recall@5={np.mean(vals['recall']):.3f}, Precision@5={np.mean(vals['precision']):.3f}, nDCG@5={np.mean(vals['ndcg']):.3f}, MRR@5={np.mean(vals['mrr']):.3f}")
 
 # Debug: Print recommendations and ground truth for each prompt (only non-empty ground truths)
 print("\nDetailed prompt-by-prompt results:")
@@ -200,6 +249,8 @@ for idx, row in df_nonempty.iterrows():
         print(f"    - {rec.get('album', rec) if isinstance(rec, dict) else rec}")
     print(f"  Recall@5: {row['recall_at_5']}")
     print(f"  Precision@5: {row['precision_at_5']}")
+    print(f"  nDCG@5: {row['ndcg_at_5']}")
+    print(f"  MRR@5: {row['mrr_at_5']}")
 
 # --------- Analysis Functions ---------
 
