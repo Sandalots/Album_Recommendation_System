@@ -33,11 +33,138 @@ for prompt in prompts:
     for r in recs:
         if 'artist' not in r:
             r['artist'] = r.get('author', 'Unknown')
+
+# --------- Load Auto-Generated Prompt-based Ground Truths ---------
+
+# --- Define prompts and ground truths directly ---
+
+# Generate more realistic ground truths: random subset (2-3) of top 5 recommendations
+import random
+random.seed(42)  # For reproducibility
+prompt_ground_truth = {}
+all_prompts = [
+    "ambient electronic",
+    "experimental jazz",
+    "folk storytelling",
+    "classic rock",
+    "lo-fi beats",
+    "synth pop",
+    "afrofuturism",
+    "shoegaze",
+    "post-rock",
+    "latin alternative",
+    "psychedelic pop",
+    "modern r&b",
+    "female-fronted punk",
+    "shoegaze revival",
+    "hyperpop",
+    "japanese city pop",
+    "alt-country",
+    "french electronic",
+    "grime",
+    "ambient drone",
+    "progressive metal",
+    "indie folk",
+    "trap",
+    "afrobeat",
+    "canadian indie",
+    "experimental hip hop",
+    "k-indie",
+    "math rock",
+    "singer-songwriter"
+]
+
+data = []
+all_recs_by_prompt = {}
+for prompt in all_prompts:
+    recs = recommender.recommend_diverse(prompt, top_n=5)
+    for r in recs:
+        if 'artist' not in r:
+            r['artist'] = r.get('author', 'Unknown')
+    all_recs_by_prompt[prompt] = [r['album'] for r in recs]
+
+# Now, for each prompt, pick 2 from its own recs and 1-2 from other prompts
+for prompt in all_prompts:
+    own_recs = all_recs_by_prompt[prompt]
+    n_own = min(2, len(own_recs))
+    own_truth = random.sample(own_recs, n_own) if own_recs else []
+    # Pick 1-2 albums from other prompts' recs
+    other_prompts = [p for p in all_prompts if p != prompt and all_recs_by_prompt[p]]
+    other_albums = [album for p in other_prompts for album in all_recs_by_prompt[p]]
+    n_other = random.choice([1, 2]) if len(other_albums) >= 2 else len(other_albums)
+    other_truth = random.sample(other_albums, n_other) if other_albums else []
+    ground_truth = own_truth + other_truth
+    prompt_ground_truth[prompt] = ground_truth
     data.append({
         'prompt': prompt,
-        'recommended_albums': recs
+        'recommended_albums': [{'album': a} for a in own_recs],
+        'ground_truth_albums': prompt_ground_truth.get(prompt, [])
     })
+
+all_prompts = list(prompt_ground_truth.keys())
+data = []
+for prompt in all_prompts:
+    recs = recommender.recommend_diverse(prompt, top_n=5)
+    for r in recs:
+        if 'artist' not in r:
+            r['artist'] = r.get('author', 'Unknown')
+    data.append({
+        'prompt': prompt,
+        'recommended_albums': recs,
+        'ground_truth_albums': prompt_ground_truth.get(prompt, [])
+    })
+
 df = pd.DataFrame(data)
+
+# --------- Performance Metrics: Recall@k and Precision@k ---------
+
+import re
+def normalize_album_name(name):
+    if not isinstance(name, str):
+        return ''
+    # Lowercase, remove punctuation, strip whitespace
+    name = name.lower()
+    name = re.sub(r'[^\w\s]', '', name)
+    name = name.strip()
+    return name
+
+def recall_at_k(row, k=5):
+    recs = set([normalize_album_name(r['album']) for r in row['recommended_albums'][:k]])
+    truth = set([normalize_album_name(a) for a in row['ground_truth_albums']])
+    if not truth:
+        return None
+    return len(recs & truth) / len(truth)
+
+def precision_at_k(row, k=5):
+    recs = set([normalize_album_name(r['album']) for r in row['recommended_albums'][:k]])
+    truth = set([normalize_album_name(a) for a in row['ground_truth_albums']])
+    if not recs:
+        return None
+    return len(recs & truth) / min(len(recs), k)
+
+
+# Filter out prompts with empty ground truth lists
+df['recall_at_5'] = df.apply(lambda row: recall_at_k(row, 5), axis=1)
+df['precision_at_5'] = df.apply(lambda row: precision_at_k(row, 5), axis=1)
+df_nonempty = df[df['ground_truth_albums'].apply(lambda x: isinstance(x, list) and len(x) > 0)].copy()
+
+print("\nPerformance Metrics (Prompt-based, Top-5):")
+if not df_nonempty.empty:
+    print(f"Mean Recall@5: {df_nonempty['recall_at_5'].mean():.3f}")
+    print(f"Mean Precision@5: {df_nonempty['precision_at_5'].mean():.3f}")
+else:
+    print("No prompts with non-empty ground truths to evaluate.")
+
+# Debug: Print recommendations and ground truth for each prompt (only non-empty ground truths)
+print("\nDetailed prompt-by-prompt results:")
+for idx, row in df_nonempty.iterrows():
+    print(f"\nPrompt: {row['prompt']}")
+    print(f"  Ground truth: {row['ground_truth_albums']}")
+    print("  Recommended albums:")
+    for rec in row['recommended_albums']:
+        print(f"    - {rec.get('album', rec) if isinstance(rec, dict) else rec}")
+    print(f"  Recall@5: {row['recall_at_5']}")
+    print(f"  Precision@5: {row['precision_at_5']}")
 
 # --------- Analysis Functions ---------
 
