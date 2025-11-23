@@ -3,10 +3,16 @@ Combined script for unsupervised analysis of album recommendations.
 Defines prompts, generates recommendations, and runs all analysis in one file.
 """
 
+
 import pandas as pd
 import matplotlib.pyplot as plt
 from collections import Counter
 from album_recommender_model import EnhancedRecommender
+import argparse
+# --------- Parse Arguments ---------
+parser = argparse.ArgumentParser(description="Album Recommendation Error Analysis")
+parser.add_argument('--no-vizs', action='store_true', help='Suppress visualizations')
+args = parser.parse_args()
 
 # --------- Define Prompts ---------
 prompts = [
@@ -71,7 +77,27 @@ all_prompts = [
     "experimental hip hop",
     "k-indie",
     "math rock",
-    "singer-songwriter"
+    "singer-songwriter",
+    # --- New intelligent, relevant prompts ---
+    "indie rock",
+    "electronic dance",
+    "instrumental piano",
+    "female singer-songwriter",
+    "jazz fusion",
+    "post-punk",
+    "ambient soundscapes",
+    "classic hip hop",
+    "experimental electronic",
+    "folk revival",
+    "psychedelic rock",
+    "modern soul",
+    "dream pop",
+    "garage rock",
+    "singer-songwriter acoustic",
+    "synthwave",
+    "chamber pop",
+    "lo-fi chill",
+    "progressive rock"
 ]
 
 data = []
@@ -169,7 +195,7 @@ for idx, row in df_nonempty.iterrows():
 # --------- Analysis Functions ---------
 
 
-def analyze_recommendation_diversity(df, k=5):
+def analyze_recommendation_diversity(df, k=5, show_viz=True):
     genre_counts, album_counts = [], []
     genre_sets, album_sets = [], []
     for _, row in df.iterrows():
@@ -206,9 +232,20 @@ def analyze_recommendation_diversity(df, k=5):
             for j in range(i+1, len(album_sets)):
                 overlap = len(album_sets[i] & album_sets[j])
                 overlap_counts.append(overlap)
+    # Only show visualizations if requested
+    if show_viz:
+        try:
+            plt.figure(figsize=(8, 4))
+            plt.hist(genre_counts, bins=range(1, max(genre_counts)+2), alpha=0.7)
+            plt.title('Distribution of Unique Genres per Prompt')
+            plt.xlabel('Unique Genres')
+            plt.ylabel('Count')
+            plt.show()
+        except Exception as e:
+            print(f"Visualization error: {e}")
 
 
-def analyze_recommendation_overlap(df, k=5):
+def analyze_recommendation_overlap(df, k=5, show_viz=True):
     all_recs = []
     for _, row in df.iterrows():
         recs = row['recommended_albums'][:k]
@@ -221,15 +258,16 @@ def analyze_recommendation_overlap(df, k=5):
     print("Most common recommended albums:")
     for album, count in counter.most_common(10):
         print(f"{album}: {count} times")
-    plt.figure(figsize=(10, 4))
-    pd.Series(counter).value_counts().sort_index().plot(kind='bar')
-    plt.title('Frequency of Album Recommendations in Top-K')
-    plt.xlabel('Times recommended in top-K')
-    plt.ylabel('Number of albums')
-    plt.show()
+    if show_viz:
+        plt.figure(figsize=(10, 4))
+        pd.Series(counter).value_counts().sort_index().plot(kind='bar')
+        plt.title('Frequency of Album Recommendations in Top-K')
+        plt.xlabel('Times recommended in top-K')
+        plt.ylabel('Number of albums')
+        plt.show()
 
 
-def plot_recommendation_feature_distribution(df, feature='genre', k=5):
+def plot_recommendation_feature_distribution(df, feature='genre', k=5, show_viz=True):
     all_features = []
     for _, row in df.iterrows():
         recs = row['recommended_albums'][:k]
@@ -242,22 +280,25 @@ def plot_recommendation_feature_distribution(df, feature='genre', k=5):
     print(f"Most common {feature}s in recommendations:")
     for feat, count in counter.most_common(10):
         print(f"{feat}: {count} times")
-    plt.figure(figsize=(10, 4))
-    pd.Series(counter).head(20).plot(kind='bar')
-    plt.title(f'Top {feature.title()}s in Recommendations')
-    plt.xlabel(feature.title())
-    plt.ylabel('Count')
-    plt.show()
+    if show_viz:
+        plt.figure(figsize=(10, 4))
+        pd.Series(counter).head(20).plot(kind='bar')
+        plt.title(f'Top {feature.title()}s in Recommendations')
+        plt.xlabel(feature.title())
+        plt.ylabel('Count')
+        plt.show()
 
 
-def analyze_recommendation_bias(df, group_feature='genre', k=5):
-    plot_recommendation_feature_distribution(df, feature=group_feature, k=k)
+def analyze_recommendation_bias(df, group_feature='genre', k=5, show_viz=True):
+    plot_recommendation_feature_distribution(df, feature=group_feature, k=k, show_viz=show_viz)
+
 
 
 # --------- Run Analyses ---------
-analyze_recommendation_diversity(df, k=5)
-analyze_recommendation_overlap(df, k=5)
-analyze_recommendation_bias(df, group_feature='genre', k=5)
+show_viz = not args.no_vizs
+analyze_recommendation_diversity(df, k=5, show_viz=show_viz)
+analyze_recommendation_overlap(df, k=5, show_viz=show_viz)
+analyze_recommendation_bias(df, group_feature='genre', k=5, show_viz=show_viz)
 
 # Print top 20 artists by recommendation count
 all_artists = []
@@ -268,4 +309,5 @@ for artist, count in Counter(all_artists).most_common(20):
     print(f"{artist}: {count} times")
 
 # Plot artist distribution (top 20)
-plot_recommendation_feature_distribution(df, feature='artist', k=5)
+if show_viz:
+    plot_recommendation_feature_distribution(df, feature='artist', k=5, show_viz=show_viz)
