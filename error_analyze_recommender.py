@@ -1,18 +1,22 @@
+import re
+import numpy as np
+from album_recommender_model import EnhancedRecommender
+import random
+from collections import Counter
+import matplotlib.pyplot as plt
+import pandas as pd
 import argparse
-parser = argparse.ArgumentParser(description="Album Recommendation Error Analysis")
-parser.add_argument('--no-vizs', action='store_true', help='Suppress visualizations')
+
+parser = argparse.ArgumentParser(
+    description="Album Recommendation Error Analysis")
+parser.add_argument('--no-vizs', action='store_true',
+                    help='Suppress visualizations')
 args = parser.parse_args()
 """
 Combined script for unsupervised analysis of album recommendations.
 Defines prompts, generates recommendations, and runs all analysis in one file.
 """
 
-
-import pandas as pd
-import matplotlib.pyplot as plt
-from collections import Counter
-import random
-from album_recommender_model import EnhancedRecommender
 recommender = EnhancedRecommender()
 if not recommender.load_models():
     recommender.build_models()
@@ -114,8 +118,6 @@ prompt_ground_truth = {}
 data = []
 all_recs_by_prompt = {}
 
-
-
 # --- Generate recommendations and ground truths ---
 all_recs_by_prompt = {}
 for prompt in all_prompts:
@@ -130,14 +132,17 @@ for prompt in all_prompts:
     own_recs = all_recs_by_prompt[prompt]
     n_own = random.randint(2, min(5, len(own_recs))) if own_recs else 0
     own_truth = random.sample(own_recs, n_own) if own_recs else []
-    other_prompts = [p for p in all_prompts if p != prompt and all_recs_by_prompt[p]]
-    other_albums = [album for p in other_prompts for album in all_recs_by_prompt[p]]
-    n_other = random.randint(1, 3) if len(other_albums) >= 3 else len(other_albums)
+    other_prompts = [p for p in all_prompts if p !=
+                     prompt and all_recs_by_prompt[p]]
+    other_albums = [
+        album for p in other_prompts for album in all_recs_by_prompt[p]]
+    n_other = random.randint(1, 3) if len(
+        other_albums) >= 3 else len(other_albums)
     other_truth = random.sample(other_albums, n_other) if other_albums else []
     ground_truth = own_truth + other_truth
     prompt_ground_truth[prompt] = ground_truth
 # --------- Additional Metrics: nDCG@5, MRR@5 ---------
-import numpy as np
+
 
 def dcg_at_k(recommended, ground_truth, k=5):
     dcg = 0.0
@@ -146,6 +151,7 @@ def dcg_at_k(recommended, ground_truth, k=5):
         if normalize_album_name(rec['album']) in gt_norm:
             dcg += 1.0 / (np.log2(i + 2))
     return dcg
+
 
 def ndcg_at_k(row, k=5):
     recommended = row['recommended_albums']
@@ -157,12 +163,14 @@ def ndcg_at_k(row, k=5):
     dcg = dcg_at_k(recommended, ground_truth, k)
     return dcg / idcg if idcg > 0 else 0.0
 
+
 def mrr_at_k(row, k=5):
     gt_norm = [normalize_album_name(a) for a in row['ground_truth_albums']]
     for i, rec in enumerate(row['recommended_albums'][:k]):
         if normalize_album_name(rec['album']) in gt_norm:
             return 1.0 / (i + 1)
     return 0.0
+
 
 data = []
 for prompt in all_prompts:
@@ -180,7 +188,7 @@ df = pd.DataFrame(data)
 
 # --------- Performance Metrics: Recall@k and Precision@k ---------
 
-import re
+
 def normalize_album_name(name):
     if not isinstance(name, str):
         return ''
@@ -190,15 +198,19 @@ def normalize_album_name(name):
     name = name.strip()
     return name
 
+
 def recall_at_k(row, k=5):
-    recs = set([normalize_album_name(r['album']) for r in row['recommended_albums'][:k]])
+    recs = set([normalize_album_name(r['album'])
+               for r in row['recommended_albums'][:k]])
     truth = set([normalize_album_name(a) for a in row['ground_truth_albums']])
     if not truth:
         return None
     return len(recs & truth) / len(truth)
 
+
 def precision_at_k(row, k=5):
-    recs = set([normalize_album_name(r['album']) for r in row['recommended_albums'][:k]])
+    recs = set([normalize_album_name(r['album'])
+               for r in row['recommended_albums'][:k]])
     truth = set([normalize_album_name(a) for a in row['ground_truth_albums']])
     if not recs:
         return None
@@ -210,7 +222,8 @@ df['recall_at_5'] = df.apply(lambda row: recall_at_k(row, 5), axis=1)
 df['precision_at_5'] = df.apply(lambda row: precision_at_k(row, 5), axis=1)
 df['ndcg_at_5'] = df.apply(lambda row: ndcg_at_k(row, 5), axis=1)
 df['mrr_at_5'] = df.apply(lambda row: mrr_at_k(row, 5), axis=1)
-df_nonempty = df[df['ground_truth_albums'].apply(lambda x: isinstance(x, list) and len(x) > 0)].copy()
+df_nonempty = df[df['ground_truth_albums'].apply(
+    lambda x: isinstance(x, list) and len(x) > 0)].copy()
 
 print("\nPerformance Metrics (Prompt-based, Top-5):")
 print("First 5 nDCG@5 values:", df_nonempty['ndcg_at_5'].head().tolist())
@@ -226,10 +239,12 @@ else:
 # Per-genre breakdown (if genre info is available in recommendations)
 genre_metrics = {}
 for idx, row in df_nonempty.iterrows():
-    genres = [r.get('genre') for r in row['recommended_albums'] if 'genre' in r and r['genre']]
+    genres = [r.get('genre') for r in row['recommended_albums']
+              if 'genre' in r and r['genre']]
     for genre in set(genres):
         if genre not in genre_metrics:
-            genre_metrics[genre] = {'recall': [], 'precision': [], 'ndcg': [], 'mrr': []}
+            genre_metrics[genre] = {'recall': [],
+                                    'precision': [], 'ndcg': [], 'mrr': []}
         genre_metrics[genre]['recall'].append(row['recall_at_5'])
         genre_metrics[genre]['precision'].append(row['precision_at_5'])
         genre_metrics[genre]['ndcg'].append(row['ndcg_at_5'])
@@ -237,7 +252,8 @@ for idx, row in df_nonempty.iterrows():
 if genre_metrics:
     print("\nPer-genre average metrics (for genres present in recommendations):")
     for genre, vals in genre_metrics.items():
-        print(f"  {genre}: Recall@5={np.mean(vals['recall']):.3f}, Precision@5={np.mean(vals['precision']):.3f}, nDCG@5={np.mean(vals['ndcg']):.3f}, MRR@5={np.mean(vals['mrr']):.3f}")
+        print(
+            f"  {genre}: Recall@5={np.mean(vals['recall']):.3f}, Precision@5={np.mean(vals['precision']):.3f}, nDCG@5={np.mean(vals['ndcg']):.3f}, MRR@5={np.mean(vals['mrr']):.3f}")
 
 # Debug: Print recommendations and ground truth for each prompt (only non-empty ground truths)
 print("\nDetailed prompt-by-prompt results:")
@@ -246,7 +262,8 @@ for idx, row in df_nonempty.iterrows():
     print(f"  Ground truth: {row['ground_truth_albums']}")
     print("  Recommended albums:")
     for rec in row['recommended_albums']:
-        print(f"    - {rec.get('album', rec) if isinstance(rec, dict) else rec}")
+        print(
+            f"    - {rec.get('album', rec) if isinstance(rec, dict) else rec}")
     print(f"  Recall@5: {row['recall_at_5']}")
     print(f"  Precision@5: {row['precision_at_5']}")
     print(f"  nDCG@5: {row['ndcg_at_5']}")
@@ -296,7 +313,8 @@ def analyze_recommendation_diversity(df, k=5, show_viz=True):
     if show_viz:
         try:
             plt.figure(figsize=(8, 4))
-            plt.hist(genre_counts, bins=range(1, max(genre_counts)+2), alpha=0.7)
+            plt.hist(genre_counts, bins=range(
+                1, max(genre_counts)+2), alpha=0.7)
             plt.title('Distribution of Unique Genres per Prompt')
             plt.xlabel('Unique Genres')
             plt.ylabel('Count')
@@ -350,8 +368,8 @@ def plot_recommendation_feature_distribution(df, feature='genre', k=5, show_viz=
 
 
 def analyze_recommendation_bias(df, group_feature='genre', k=5, show_viz=True):
-    plot_recommendation_feature_distribution(df, feature=group_feature, k=k, show_viz=show_viz)
-
+    plot_recommendation_feature_distribution(
+        df, feature=group_feature, k=k, show_viz=show_viz)
 
 
 # --------- Run Analyses ---------
@@ -370,4 +388,5 @@ for artist, count in Counter(all_artists).most_common(20):
 
 # Plot artist distribution (top 20)
 if show_viz:
-    plot_recommendation_feature_distribution(df, feature='artist', k=5, show_viz=show_viz)
+    plot_recommendation_feature_distribution(
+        df, feature='artist', k=5, show_viz=show_viz)
