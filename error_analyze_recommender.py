@@ -1,3 +1,7 @@
+import argparse
+parser = argparse.ArgumentParser(description="Album Recommendation Error Analysis")
+parser.add_argument('--no-vizs', action='store_true', help='Suppress visualizations')
+args = parser.parse_args()
 """
 Combined script for unsupervised analysis of album recommendations.
 Defines prompts, generates recommendations, and runs all analysis in one file.
@@ -7,47 +11,13 @@ Defines prompts, generates recommendations, and runs all analysis in one file.
 import pandas as pd
 import matplotlib.pyplot as plt
 from collections import Counter
+import random
 from album_recommender_model import EnhancedRecommender
-import argparse
-# --------- Parse Arguments ---------
-parser = argparse.ArgumentParser(description="Album Recommendation Error Analysis")
-parser.add_argument('--no-vizs', action='store_true', help='Suppress visualizations')
-args = parser.parse_args()
-
-# --------- Define Prompts ---------
-prompts = [
-    "upbeat and energetic",
-    "dark and moody",
-    "experimental jazz",
-    "classic rock",
-    "ambient electronic",
-    "folk storytelling",
-    "dance party",
-    "chill study music",
-    "melancholic indie",
-    "instrumental piano"
-]
-
-# --------- Generate Recommendations ---------
 recommender = EnhancedRecommender()
 if not recommender.load_models():
     recommender.build_models()
 
-data = []
-for prompt in prompts:
-    recs = recommender.recommend_diverse(prompt, top_n=5)
-    for r in recs:
-        if 'artist' not in r:
-            r['artist'] = r.get('author', 'Unknown')
 
-# --------- Load Auto-Generated Prompt-based Ground Truths ---------
-
-# --- Define prompts and ground truths directly ---
-
-# Generate more realistic ground truths: random subset (2-3) of top 5 recommendations
-import random
-random.seed(42)  # For reproducibility
-prompt_ground_truth = {}
 all_prompts = [
     "ambient electronic",
     "experimental jazz",
@@ -78,7 +48,6 @@ all_prompts = [
     "k-indie",
     "math rock",
     "singer-songwriter",
-    # --- New intelligent, relevant prompts ---
     "indie rock",
     "electronic dance",
     "instrumental piano",
@@ -97,10 +66,57 @@ all_prompts = [
     "synthwave",
     "chamber pop",
     "lo-fi chill",
-    "progressive rock"
+    "progressive rock",
+    "britpop",
+    "alt r&b",
+    "bedroom pop",
+    "post-hardcore",
+    "americana",
+    "electro-pop",
+    "contemporary classical",
+    "world fusion",
+    "latin jazz",
+    "afro-cuban jazz",
+    "minimal techno",
+    "future bass",
+    "vaporwave",
+    "folk punk",
+    "noise rock",
+    "math pop",
+    "baroque pop",
+    "indietronica",
+    "alt metal",
+    "nu jazz",
+    "soul jazz",
+    "twee pop",
+    "post-bop",
+    "electro swing",
+    "desert blues",
+    "krautrock",
+    "avant-garde jazz",
+    "bossa nova",
+    "jazz rap",
+    "trap soul",
+    "melodic death metal",
+    "gothic rock",
+    "shoegaze pop",
+    "indie electronic",
+    "chillwave",
+    "symphonic rock",
+    "art pop",
+    "folk noir",
+    "indie pop rock",
+    "electronic folk",
+    "psychedelic soul"
 ]
 
+prompt_ground_truth = {}
 data = []
+all_recs_by_prompt = {}
+
+
+
+# --- Generate recommendations and ground truths ---
 all_recs_by_prompt = {}
 for prompt in all_prompts:
     recs = recommender.recommend_diverse(prompt, top_n=5)
@@ -109,25 +125,18 @@ for prompt in all_prompts:
             r['artist'] = r.get('author', 'Unknown')
     all_recs_by_prompt[prompt] = [r['album'] for r in recs]
 
-# Now, for each prompt, pick 2 from its own recs and 1-2 from other prompts
+# For each prompt, pick 2 from its own recs and 1-2 from other prompts
 for prompt in all_prompts:
     own_recs = all_recs_by_prompt[prompt]
     n_own = min(2, len(own_recs))
     own_truth = random.sample(own_recs, n_own) if own_recs else []
-    # Pick 1-2 albums from other prompts' recs
     other_prompts = [p for p in all_prompts if p != prompt and all_recs_by_prompt[p]]
     other_albums = [album for p in other_prompts for album in all_recs_by_prompt[p]]
     n_other = random.choice([1, 2]) if len(other_albums) >= 2 else len(other_albums)
     other_truth = random.sample(other_albums, n_other) if other_albums else []
     ground_truth = own_truth + other_truth
     prompt_ground_truth[prompt] = ground_truth
-    data.append({
-        'prompt': prompt,
-        'recommended_albums': [{'album': a} for a in own_recs],
-        'ground_truth_albums': prompt_ground_truth.get(prompt, [])
-    })
 
-all_prompts = list(prompt_ground_truth.keys())
 data = []
 for prompt in all_prompts:
     recs = recommender.recommend_diverse(prompt, top_n=5)
