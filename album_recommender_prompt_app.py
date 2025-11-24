@@ -252,6 +252,10 @@ if recommend_button or surprise_button or user_prompt:
                             with st.expander("🎧 Best For"):
                                 st.markdown(rec['listening_contexts'])
 
+                    # Show similarity score before the read full review link
+                    if rec.get('similarity') is not None:
+                        st.markdown(
+                            f"<div style='text-align: center; margin-top: 1rem;'><b>Similarity:</b> {rec['similarity']:.3f}</div>", unsafe_allow_html=True)
                     # Center the read full review link
                     st.markdown(
                         f"<div style='text-align: center; margin-top: 1rem;'><a href='{rec['url']}' target='_blank'>📖 Read Full Review</a></div>", unsafe_allow_html=True)
