@@ -185,6 +185,7 @@ if recommend_button or surprise_button or user_prompt:
             st.session_state.last_prompt = user_prompt
 
             if recommendations:
+
                 # Fetch album arts for current batch
                 urls_to_fetch = [rec['url']
                                  for rec in recommendations[:st.session_state.num_results]]
@@ -252,10 +253,24 @@ if recommend_button or surprise_button or user_prompt:
                             with st.expander("🎧 Best For"):
                                 st.markdown(rec['listening_contexts'])
 
-                    # Show similarity score before the read full review link
+                    # Show confidence score before the read full review link, color-coded
                     if rec.get('similarity') is not None:
+                        conf = rec['similarity']
+                        if conf >= 0.75:
+                            conf_class = 'confidence-green'
+                            conf_emoji = '🟢'
+                        elif conf >= 0.5:
+                            conf_class = 'confidence-orange'
+                            conf_emoji = '🟠'
+                        else:
+                            conf_class = 'confidence-red'
+                            conf_emoji = '🔴'
+
                         st.markdown(
-                            f"<div style='text-align: center; margin-top: 1rem;'><b>Similarity:</b> {rec['similarity']:.3f}</div>", unsafe_allow_html=True)
+                            f"<div style='text-align: center; margin-top: 0.5rem;'><b>Confidence:</b> {conf_emoji} {conf:.3f}</div>",
+                            unsafe_allow_html=True
+                        )
+                                # Debug: print the actual recommendation list for troubleshooting
                     # Center the read full review link
                     st.markdown(
                         f"<div style='text-align: center; margin-top: 1rem;'><a href='{rec['url']}' target='_blank'>📖 Read Full Review</a></div>", unsafe_allow_html=True)
@@ -263,7 +278,7 @@ if recommend_button or surprise_button or user_prompt:
                     st.markdown("</div>", unsafe_allow_html=True)
 
                 # Show "Load More" button if not at maximum and we have more results
-                if st.session_state.num_results < len(recommendations) and st.session_state.num_results < 20:
+                if st.session_state.num_results < len(recommendations):
                     col1, col2, col3 = st.columns([2, 1, 2])
                     with col2:
                         if st.button("Load 5 More Albums", key="load_more", use_container_width=True):
@@ -279,9 +294,10 @@ if recommend_button or surprise_button or user_prompt:
 if 'all_recommendations' in st.session_state and 'last_prompt' in st.session_state:
     recommendations = st.session_state.all_recommendations
     if recommendations and not (recommend_button or user_prompt):
+
         # Fetch album arts for current batch
         urls_to_fetch = [rec['url']
-                         for rec in recommendations[:st.session_state.num_results]]
+                 for rec in recommendations[:st.session_state.num_results]]
         album_arts = get_album_arts_parallel(urls_to_fetch)
 
         # Display cached recommendations
@@ -352,7 +368,7 @@ if 'all_recommendations' in st.session_state and 'last_prompt' in st.session_sta
             st.markdown("</div>", unsafe_allow_html=True)
 
         # Show "Load More" button if not at maximum and we have more results
-        if st.session_state.num_results < len(recommendations) and st.session_state.num_results < 20:
+        if st.session_state.num_results < len(recommendations):
             col1, col2, col3 = st.columns([2, 1, 2])
             with col2:
                 if st.button("Load 5 More Albums", key="load_more_cached", use_container_width=True):

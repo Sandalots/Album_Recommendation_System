@@ -67,7 +67,6 @@ streamlit run album_recommender_prompt_app.py # Launches a streamlit UI to allow
 - **album_tfidf_matrix.pkl**: Precomputed TF-IDF feature matrix for all albums, used for fast keyword-based recommendations.
 - **album_semantic_embeddings.npy**: SentenceTransformer embeddings for all albums, enabling semantic search and matching user prompts to albums based on meaning.
 
-
 ## Error Analysing
 
 To analyze errors and evaluate the performance of the album recommendation system, use the provided error analysis script. This script runs a large set of prompts through the recommender, generates recommendations, and computes a variety of metrics and analyses to help you understand model performance and behavior.
