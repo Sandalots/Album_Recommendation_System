@@ -1,4 +1,4 @@
-# Random placeholder examples
+# Random placeholder user prompts for recommending albums based on the below examples.
 placeholder_examples = [
     "atmospheric electronic",
     "high-energy rock for workouts",
@@ -100,4 +100,27 @@ placeholder_examples = [
     "dark ambient soundtracks",
     "upbeat dance-pop",
     "emotional acoustic ballads",
+    "groovy funk jams",
+    "dreamy shoegaze soundscapes",
+    "aggressive punk rock",
+    "chill lo-fi hip-hop",
+    "introspective singer-songwriter",
+    "epic orchestral arrangements",
+    "raw blues rock",
+    "smooth bossa nova tunes",
+    "energetic ska rhythms",
+    "meditative new age soundscapes",
+    "gritty blues classics",
+    "futuristic synth-pop",
+    "powerful protest anthems",
+    "trippy psych-rock",
+    "minimal techno beats",
+    "explosive noise punk",
+    "jazzy hip-hop beats",
+    "haunting gothic rock",
+    "feel-good summer hits",
+    "cinematic post-rock pieces",
+    "intimate acoustic performances",
+    "funk-infused grooves",
+    "ethereal vocal layers",
 ]

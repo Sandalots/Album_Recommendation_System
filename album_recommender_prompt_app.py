@@ -30,7 +30,7 @@ class SuppressStderr:
 
 sys.stderr = SuppressStderr()
 
-st.set_page_config(page_title="Album Recommender", page_icon="🎵")
+st.set_page_config(page_title="YourNextAlbum", page_icon="🎵")
 
 with open("app_styles.css") as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
@@ -107,7 +107,7 @@ def load_recommender():
     return recommender
 
 
-st.title("Album Recommendation System")
+st.title("YourNextAlbum 🎵")
 
 # Add spacing after title
 st.markdown("<br>", unsafe_allow_html=True)
@@ -118,7 +118,7 @@ if 'placeholder_text' not in st.session_state:
     st.session_state.placeholder_text = random.choice(placeholder_examples)
 
 user_prompt = st.text_input(
-    "What kind of music are you looking for?",
+    "Tell us the Album you seek...",
     placeholder=f"e.g., '{st.session_state.placeholder_text}'",
     key="main_input"
 )
