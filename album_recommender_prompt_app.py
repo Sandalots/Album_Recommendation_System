@@ -176,116 +176,94 @@ if recommend_button or surprise_button or user_prompt:
             with st.spinner("Loading Recommendations..."):
                 st.session_state.recommender = load_recommender()
         with st.spinner("Loading Recommendations..."):
+            # Always fetch a large number of recommendations
             recommendations = st.session_state.recommender.recommend_diverse(
                 user_prompt,
-                top_n=st.session_state.num_results,
+                top_n=100,
                 min_score=min_score
             )
             st.session_state.all_recommendations = recommendations
             st.session_state.last_prompt = user_prompt
 
-            if recommendations:
+        if recommendations:
+            # Fetch album arts for current batch
+            urls_to_fetch = [rec['url'] for rec in recommendations[:st.session_state.num_results]]
+            album_arts = get_album_arts_parallel(urls_to_fetch)
 
-                # Fetch album arts for current batch
-                urls_to_fetch = [rec['url']
-                                 for rec in recommendations[:st.session_state.num_results]]
-                album_arts = get_album_arts_parallel(urls_to_fetch)
-
-                for i, rec in enumerate(recommendations[:st.session_state.num_results], 1):
-                    # Add fade-in animation to newly loaded albums
-                    fade_class = "fade-in" if i > (
-                        st.session_state.num_results - 5) else ""
-                    st.markdown(
-                        f"<div class='{fade_class}'>", unsafe_allow_html=True)
-
-                    # Display album art centered if available
-                    album_art_url = album_arts.get(rec['url'])
-                    if album_art_url:
-                        st.markdown(
-                            f"<div style='text-align: center; margin-bottom: 1rem;'><img src='{album_art_url}' style='border-radius: 8px;' /></div>", unsafe_allow_html=True)
-
-                    st.markdown(
-                        f"<h3 style='text-align: center;'>{rec['album']}</h3>", unsafe_allow_html=True)
-                    st.markdown(
-                        f"<p style='text-align: center;'><strong>Artist:</strong> {rec['artist']}</p>", unsafe_allow_html=True)
-                    st.markdown(
-                        f"<p style='text-align: center;'><strong>Genre:</strong> {rec['genre']} | <strong>Score:</strong> {rec['score']}/10 | <strong>Year:</strong> {int(rec['year'])}</p>", unsafe_allow_html=True)
-
-                    # Display themes
-                    if rec.get('themes') and rec['themes'] != 'N/A':
-                        themes_list = [t.strip()
-                                       for t in rec['themes'].split(',')]
-                        cleaned_themes = []
-                        for theme in themes_list:
-                            if '_' in theme:
-                                parts = theme.split('_', 1)
-                                cleaned = parts[1].replace('_', ' ').title() if len(
-                                    parts) > 1 else theme.replace('_', ' ').title()
-                            else:
-                                cleaned = theme.replace('_', ' ').title()
-                            cleaned_themes.append(cleaned)
-                        themes_display = ' • '.join(cleaned_themes)
-                        st.markdown(
-                            f"<p style='text-align: center; margin-bottom: 0;'><strong>Themes:</strong></p>", unsafe_allow_html=True)
-                        st.markdown(
-                            f"<p style='text-align: center; margin-top: 0;'>{themes_display}</p>", unsafe_allow_html=True)
-
-                    # Collapsible sections for additional details
-                    col1, col2 = st.columns(2)
-
-                    with col1:
-                        if rec['highlights'] and isinstance(rec['highlights'], str):
-                            with st.expander("📝 Review Highlights"):
-                                for highlight in rec['highlights'].split(' | ')[:3]:
-                                    if highlight:
-                                        st.markdown(f"- {highlight}")
-
-                        if rec.get('instrumentation'):
-                            with st.expander("🎸 Instrumentation"):
-                                st.markdown(rec['instrumentation'])
-
-                    with col2:
-                        if rec.get('mood_energy'):
-                            with st.expander("🎭 Mood & Energy"):
-                                st.markdown(rec['mood_energy'])
-
-                        if rec.get('listening_contexts'):
-                            with st.expander("🎧 Best For"):
-                                st.markdown(rec['listening_contexts'])
-
-                    # Show confidence score before the read full review link, color-coded
-                    if rec.get('similarity') is not None:
-                        conf = rec['similarity']
-                        if conf >= 0.75:
-                            conf_class = 'confidence-green'
-                            conf_emoji = '🟢'
-                        elif conf >= 0.5:
-                            conf_class = 'confidence-orange'
-                            conf_emoji = '🟠'
+            # Display recommendations
+            for i, rec in enumerate(recommendations[:st.session_state.num_results], 1):
+                # Add fade-in animation to newly loaded albums
+                fade_class = "fade-in" if i > (st.session_state.num_results - 5) else ""
+                st.markdown(f"<div class='{fade_class}'>", unsafe_allow_html=True)
+                # Display album art centered if available
+                album_art_url = album_arts.get(rec['url'])
+                if album_art_url:
+                    st.markdown(f"<div style='text-align: center; margin-bottom: 1rem;'><img src='{album_art_url}' style='border-radius: 8px;' /></div>", unsafe_allow_html=True)
+                st.markdown(f"<h3 style='text-align: center;'>{rec['album']}</h3>", unsafe_allow_html=True)
+                st.markdown(f"<p style='text-align: center;'><strong>Artist:</strong> {rec['artist']}</p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='text-align: center;'><strong>Genre:</strong> {rec['genre']} | <strong>Score:</strong> {rec['score']}/10 | <strong>Year:</strong> {int(rec['year'])}</p>", unsafe_allow_html=True)
+                # Display themes
+                if rec.get('themes') and rec['themes'] != 'N/A':
+                    themes_list = [t.strip() for t in rec['themes'].split(',')]
+                    cleaned_themes = []
+                    for theme in themes_list:
+                        if '_' in theme:
+                            parts = theme.split('_', 1)
+                            cleaned = parts[1].replace('_', ' ').title() if len(parts) > 1 else theme.replace('_', ' ').title()
                         else:
-                            conf_class = 'confidence-red'
-                            conf_emoji = '🔴'
+                            cleaned = theme.replace('_', ' ').title()
+                        cleaned_themes.append(cleaned)
+                    themes_display = ' • '.join(cleaned_themes)
+                    st.markdown(f"<p style='text-align: center; margin-bottom: 0;'><strong>Themes:</strong></p>", unsafe_allow_html=True)
+                    st.markdown(f"<p style='text-align: center; margin-top: 0;'>{themes_display}</p>", unsafe_allow_html=True)
+                # Collapsible sections for additional details
+                col1, col2 = st.columns(2)
+                with col1:
+                    if rec['highlights'] and isinstance(rec['highlights'], str):
+                        with st.expander("📝 Review Highlights"):
+                            for highlight in rec['highlights'].split(' | ')[:3]:
+                                if highlight:
+                                    st.markdown(f"- {highlight}")
+                    if rec.get('instrumentation'):
+                        with st.expander("🎸 Instrumentation"):
+                            st.markdown(rec['instrumentation'])
+                with col2:
+                    if rec.get('mood_energy'):
+                        with st.expander("🎭 Mood & Energy"):
+                            st.markdown(rec['mood_energy'])
+                    if rec.get('listening_contexts'):
+                        with st.expander("🎧 Best For"):
+                            st.markdown(rec['listening_contexts'])
+                # Show confidence score before the read full review link, color-coded
+                if rec.get('similarity') is not None:
+                    conf = rec['similarity']
+                    if conf >= 0.75:
+                        conf_class = 'confidence-green'
+                        conf_emoji = '🟢'
+                    elif conf >= 0.5:
+                        conf_class = 'confidence-orange'
+                        conf_emoji = '🟠'
+                    else:
+                        conf_class = 'confidence-red'
+                        conf_emoji = '🔴'
+                    st.markdown(f"<div style='text-align: center; margin-top: 0.5rem;'><b>Confidence:</b> {conf_emoji} {conf:.3f}</div>", unsafe_allow_html=True)
+                # Center the read full review link
+                st.markdown(f"<div style='text-align: center; margin-top: 1rem;'><a href='{rec['url']}' target='_blank'>📖 Read Full Review</a></div>", unsafe_allow_html=True)
+                st.markdown("---")
+                st.markdown("</div>", unsafe_allow_html=True)
 
-                        st.markdown(
-                            f"<div style='text-align: center; margin-top: 0.5rem;'><b>Confidence:</b> {conf_emoji} {conf:.3f}</div>",
-                            unsafe_allow_html=True
-                        )
-                                # Debug: print the actual recommendation list for troubleshooting
-                    # Center the read full review link
-                    st.markdown(
-                        f"<div style='text-align: center; margin-top: 1rem;'><a href='{rec['url']}' target='_blank'>📖 Read Full Review</a></div>", unsafe_allow_html=True)
-                    st.markdown("---")
-                    st.markdown("</div>", unsafe_allow_html=True)
-
-                # Show "Load More" button if not at maximum and we have more results
-                if st.session_state.num_results < len(recommendations):
-                    col1, col2, col3 = st.columns([2, 1, 2])
-                    with col2:
-                        if st.button("Load 5 More Albums", key="load_more", use_container_width=True):
-                            st.session_state.num_results += 5
-                            st.rerun()
-            else:
-                st.warning("No albums found. Try a different description.")
+            # Show "Load 5 More Albums" button after all recommendations
+            col1, col2, col3 = st.columns([2, 1, 2])
+            with col2:
+                if st.button("Load 5 More Albums", key="load_more", use_container_width=True):
+                    if st.session_state.num_results < len(recommendations):
+                        st.session_state.num_results = min(
+                            st.session_state.num_results + 5, len(recommendations))
+                        st.rerun()
+                    else:
+                        st.info("No more recommendations to show.")
+        else:
+            st.warning("No albums found. Try a different description.")
     else:
         st.info(
             "Tell us what you're in the mood for and we'll find the perfect albums!")
@@ -297,7 +275,7 @@ if 'all_recommendations' in st.session_state and 'last_prompt' in st.session_sta
 
         # Fetch album arts for current batch
         urls_to_fetch = [rec['url']
-                 for rec in recommendations[:st.session_state.num_results]]
+                         for rec in recommendations[:st.session_state.num_results]]
         album_arts = get_album_arts_parallel(urls_to_fetch)
 
         # Display cached recommendations
@@ -368,9 +346,12 @@ if 'all_recommendations' in st.session_state and 'last_prompt' in st.session_sta
             st.markdown("</div>", unsafe_allow_html=True)
 
         # Show "Load More" button if not at maximum and we have more results
-        if st.session_state.num_results < len(recommendations):
-            col1, col2, col3 = st.columns([2, 1, 2])
-            with col2:
-                if st.button("Load 5 More Albums", key="load_more_cached", use_container_width=True):
-                    st.session_state.num_results += 5
+        col1, col2, col3 = st.columns([2, 1, 2])
+        with col2:
+            if st.button("Load 5 More Albums", key="load_more_cached", use_container_width=True):
+                if st.session_state.num_results < len(recommendations):
+                    st.session_state.num_results = min(
+                        st.session_state.num_results + 5, len(recommendations))
                     st.rerun()
+                else:
+                    st.info("No more recommendations to show.")
