@@ -13,37 +13,36 @@ import os
 def ensure_nltk_resource(resource):
     try:
         nltk.data.find(resource)
+
     except LookupError:
         nltk.download(resource.split('/')[-1], quiet=True)
 
-
-print("Checking NLTK resources...")
 
 ensure_nltk_resource('tokenizers/punkt')
 ensure_nltk_resource('corpora/stopwords')
 ensure_nltk_resource('corpora/wordnet')
 ensure_nltk_resource('taggers/averaged_perceptron_tagger')
 
-print("NLTK resources ready.\n")
-
 print("=== Scrapped Album Reviews Dataset Preprocessing ===\n")
 
-
 df = pd.read_csv('outputs/pitchfork_reviews_raw.csv')
+
 # Fill missing artist names with 'Various Artists'
 df['artist_name'] = df['artist_name'].fillna('Various Artists')
 
-print(f"Dataset shape: {df.shape}")
+print(f"Input Scrapped Pitchfork Dataset shape: {df.shape}")
 
 missing_values = df.isnull().sum()
-print(f"Missing values: {missing_values.sum()}\n")
+print(f"Missing values in Pitchfork Dataset: {missing_values.sum()}\n")
 
 print("Step 1: Basic Missing Values Cleaning")
 
 df['genre'] = df['genre'].fillna('Unknown')
 mean_score = df['score'].astype(float).mean()
+
 df['score'] = df['score'].fillna(mean_score)
 median_year = df['release_year'].astype(float).median()
+
 df['release_year'] = df['release_year'].fillna(median_year)
 df['review_text'] = df['review_text'].fillna('')
 
@@ -58,7 +57,6 @@ stop_words = set(stopwords.words('english'))
 
 # Keep music-specific words that might be in stopwords
 music_stopwords = stop_words - {'not', 'no', 'more', 'most', 'very', 'only', 'too', 'just'}
-
 
 def preprocess_text(text):
     """Comprehensive text preprocessing"""
@@ -75,8 +73,7 @@ def preprocess_text(text):
     text_lower = text.lower()
 
     # Remove URLs
-    text_clean = re.sub(r'http\S+|www\S+|https\S+', '',
-                        text_lower, flags=re.MULTILINE)
+    text_clean = re.sub(r'http\S+|www\S+|https\S+', '', text_lower, flags=re.MULTILINE)
 
     # Remove email addresses
     text_clean = re.sub(r'\S+@\S+', '', text_clean)
@@ -91,8 +88,7 @@ def preprocess_text(text):
     tokens = word_tokenize(text_clean)
 
     # Remove stopwords and punctuation
-    tokens_filtered = [
-        w for w in tokens if w not in music_stopwords and w not in string.punctuation and len(w) > 2]
+    tokens_filtered = [ w for w in tokens if w not in music_stopwords and w not in string.punctuation and len(w) > 2]
 
     # Lemmatization (preserves meaning better)
     tokens_lemmatized = [lemmatizer.lemmatize(w) for w in tokens_filtered]
@@ -126,26 +122,21 @@ print("="*80)
 df['review_length'] = df['review_text'].str.len()
 df['word_count'] = df['review_text'].str.split().str.len()
 df['processed_word_count'] = df['review_text_processed'].str.split().str.len()
-df['unique_word_ratio'] = df.apply(lambda row: len(set(
-    row['review_text_processed'].split())) / max(row['processed_word_count'], 1), axis=1)
+df['unique_word_ratio'] = df.apply(lambda row: len(set(row['review_text_processed'].split())) / max(row['processed_word_count'], 1), axis=1)
 
 # Sentiment indicators from text
 df['exclamation_count'] = df['review_text'].str.count('!')
 df['question_count'] = df['review_text'].str.count(r'\?')
-df['avg_word_length'] = df['review_text_processed'].apply(lambda x: sum(
-    len(word) for word in x.split()) / max(len(x.split()), 1) if x else 0)
+df['avg_word_length'] = df['review_text_processed'].apply(lambda x: sum(len(word) for word in x.split()) / max(len(x.split()), 1) if x else 0)
 
 # Score normalization and categorization
-df['score_normalized'] = (df['score'].astype(float) - df['score'].astype(
-    float).min()) / (df['score'].astype(float).max() - df['score'].astype(float).min())
+df['score_normalized'] = (df['score'].astype(float) - df['score'].astype(float).min()) / (df['score'].astype(float).max() - df['score'].astype(float).min())
 
-df['score_category'] = pd.cut(df['score'].astype(float), bins=[
-                              0, 5, 7, 8.5, 10], labels=['Poor', 'Good', 'Great', 'Masterpiece'])
+df['score_category'] = pd.cut(df['score'].astype(float), bins=[0, 5, 7, 8.5, 10], labels=['Poor', 'Good', 'Great', 'Masterpiece'])
 
 # Temporal features
 df['decade'] = (df['release_year'].astype(float) // 10 * 10).astype(int)
-df['release_year_normalized'] = (df['release_year'].astype(float) - df['release_year'].astype(
-    float).min()) / (df['release_year'].astype(float).max() - df['release_year'].astype(float).min())
+df['release_year_normalized'] = (df['release_year'].astype(float) - df['release_year'].astype(float).min()) / (df['release_year'].astype(float).max() - df['release_year'].astype(float).min())
 
 # Genre standardization
 df['primary_genre'] = df['genre'].str.split('/').str[0].str.strip().str.lower()
@@ -172,13 +163,11 @@ print(f"Very short reviews (<100 chars): {empty_reviews}")
 q1_length = df['review_length'].quantile(0.25)
 q3_length = df['review_length'].quantile(0.75)
 iqr_length = q3_length - q1_length
-outliers_length = ((df['review_length'] < (q1_length - 1.5 * iqr_length))
-                   | (df['review_length'] > (q3_length + 1.5 * iqr_length))).sum()
+outliers_length = ((df['review_length'] < (q1_length - 1.5 * iqr_length)) | (df['review_length'] > (q3_length + 1.5 * iqr_length))).sum()
 print(f"Review length outliers: {outliers_length}")
 
 # Check for anomalous scores
-anomalous_scores = ((df['score'].astype(float) < 0) |
-                    (df['score'].astype(float) > 10)).sum()
+anomalous_scores = ((df['score'].astype(float) < 0) | (df['score'].astype(float) > 10)).sum()
 print(f"Anomalous scores (outside 0-10 range): {anomalous_scores}")
 
 missing_final = df.isnull().sum().sum()
@@ -195,11 +184,13 @@ print(f"\nTop 10 Genres:")
 print(df['primary_genre'].value_counts().head(10))
 
 print(f"\nReview Text Stats:")
+
 print(f"  Original:")
 print(f"    Average length: {df['review_length'].mean():.0f} characters")
 print(f"    Average words: {df['word_count'].mean():.0f} words")
 print(f"    Min length: {df['review_length'].min()}")
 print(f"    Max length: {df['review_length'].max()}")
+
 print(f"  Processed:")
 print(f"    Average words: {df['processed_word_count'].mean():.0f} words")
 print(f"    Average unique word ratio: {df['unique_word_ratio'].mean():.2f}")

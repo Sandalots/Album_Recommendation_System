@@ -11,8 +11,12 @@ fi
 # 1. Activate venv (prefer .venv, fallback to venv)
 if [ -d ".venv" ]; then
   source .venv/bin/activate
+
+# check for venv if .venv not found
 elif [ -d "venv" ]; then
   source venv/bin/activate
+
+# tell user a venv cannot be found nor created.
 else
   echo "No virtual environment found!" >&2
   exit 1
@@ -37,5 +41,6 @@ python3 album_recommender_model.py
 # Notify user of core YourNextAlbum setup completion
 echo "Quickstart complete: venv ready, dependencies installed, dataset created, sentiment analyzed, recommender built."
 
-# 6. Run the Streamlit YourNextAlbum app
+# 6. Run the Streamlit YourNextAlbum interface app
 streamlit run album_recommender_prompt_app.py
+# the streamlit interface should pop up in the users default web browser under normal circumstances.

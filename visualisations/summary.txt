@@ -1,61 +1,61 @@
-ALBUM RECOMMENDATION SYSTEM ERROR ANALYSIS SUMMARY
+YOURNEXTALBUM SYSTEM ERROR ANALYSIS SUMMARY
 Total prompts analyzed: 89
-Recall At 5: mean=0.453, median=0.500, std=0.201, min=0.095, max=0.833
-Precision At 5: mean=0.703, median=0.600, std=0.232, min=0.400, max=1.000
-Ndcg At 5: mean=0.713, median=0.699, std=0.234, min=0.277, max=1.000
-Mrr At 5: mean=0.824, median=1.000, std=0.275, min=0.250, max=1.000
-F1@5: mean=0.524, median=0.526, std=0.198, min=0.154, max=0.909
+Recall At 5: mean=0.469, median=0.455, std=0.207, min=0.077, max=0.833
+Precision At 5: mean=0.719, median=0.800, std=0.219, min=0.400, max=1.000
+Ndcg At 5: mean=0.727, median=0.786, std=0.232, min=0.277, max=1.000
+Mrr At 5: mean=0.841, median=1.000, std=0.269, min=0.250, max=1.000
+F1@5: mean=0.537, median=0.545, std=0.191, min=0.129, max=0.909
 
 Top 5 best prompts by Recall@5:
-  desert blues: Recall@5=0.833
-  math pop: Recall@5=0.833
-  electro-pop: Recall@5=0.800
-  electro swing: Recall@5=0.750
-  latin alternative: Recall@5=0.750
+  folk noir: Recall@5=0.833
+  bossa nova: Recall@5=0.833
+  synthwave: Recall@5=0.800
+  modern r&b: Recall@5=0.800
+  britpop: Recall@5=0.800
 
 Top 5 worst prompts by Recall@5:
-  psychedelic rock: Recall@5=0.095
-  garage rock: Recall@5=0.100
-  gothic rock: Recall@5=0.105
-  experimental electronic: Recall@5=0.125
-  post-rock: Recall@5=0.125
+  indie pop rock: Recall@5=0.077
+  classic rock: Recall@5=0.095
+  indie rock: Recall@5=0.111
+  post-rock: Recall@5=0.136
+  gothic rock: Recall@5=0.136
 
 Per-genre average metrics (for genres present in recommendations):
-  Unknown: Recall@5=0.422, Precision@5=0.725, nDCG@5=0.735, MRR@5=0.854
-  Electronic: Recall@5=0.452, Precision@5=0.679, nDCG@5=0.695, MRR@5=0.807
-  Jazz / Experimental: Recall@5=0.437, Precision@5=0.600, nDCG@5=0.600, MRR@5=0.726
-  Experimental / Jazz: Recall@5=0.419, Precision@5=0.775, nDCG@5=0.740, MRR@5=0.812
-  Rock: Recall@5=0.438, Precision@5=0.703, nDCG@5=0.717, MRR@5=0.823
-  Experimental / Rock: Recall@5=0.410, Precision@5=0.640, nDCG@5=0.631, MRR@5=0.750
-  Electronic / Experimental: Recall@5=0.561, Precision@5=0.613, nDCG@5=0.643, MRR@5=0.772
-  Folk/Country: Recall@5=0.442, Precision@5=0.700, nDCG@5=0.710, MRR@5=0.854
-  Experimental: Recall@5=0.454, Precision@5=0.713, nDCG@5=0.721, MRR@5=0.833
-  Electronic / Experimental / Rock: Recall@5=0.143, Precision@5=0.600, nDCG@5=0.447, MRR@5=0.333
-  Pop/R&B: Recall@5=0.545, Precision@5=0.673, nDCG@5=0.691, MRR@5=0.799
-  Global / Jazz: Recall@5=0.625, Precision@5=1.000, nDCG@5=1.000, MRR@5=1.000
-  Rap: Recall@5=0.509, Precision@5=0.681, nDCG@5=0.693, MRR@5=0.796
-  Rock / Metal: Recall@5=0.495, Precision@5=0.867, nDCG@5=0.880, MRR@5=1.000
-  Rap / Pop/R&B: Recall@5=0.500, Precision@5=0.600, nDCG@5=0.711, MRR@5=1.000
-  Pop/R&B / Experimental: Recall@5=0.381, Precision@5=0.400, nDCG@5=0.602, MRR@5=1.000
-  Rap / Experimental: Recall@5=0.365, Precision@5=0.700, nDCG@5=0.777, MRR@5=1.000
-  Rock / Experimental: Recall@5=0.263, Precision@5=0.600, nDCG@5=0.515, MRR@5=0.500
-  Electronic / Pop/R&B: Recall@5=0.708, Precision@5=0.700, nDCG@5=0.731, MRR@5=0.750
-  Electronic / Rock: Recall@5=0.690, Precision@5=0.900, nDCG@5=0.934, MRR@5=1.000
-  Rock / Pop/R&B / Folk/Country: Recall@5=0.333, Precision@5=0.600, nDCG@5=0.640, MRR@5=1.000
-  Metal: Recall@5=0.505, Precision@5=0.725, nDCG@5=0.757, MRR@5=0.938
-  Pop/R&B / Rap: Recall@5=0.462, Precision@5=0.733, nDCG@5=0.788, MRR@5=0.833
-  Global / Pop/R&B: Recall@5=0.625, Precision@5=1.000, nDCG@5=1.000, MRR@5=1.000
-  Experimental / Folk/Country: Recall@5=0.471, Precision@5=0.867, nDCG@5=0.900, MRR@5=1.000
-  Experimental / Electronic: Recall@5=0.428, Precision@5=0.600, nDCG@5=0.688, MRR@5=0.833
-  Folk/Country / Experimental: Recall@5=0.714, Precision@5=1.000, nDCG@5=1.000, MRR@5=1.000
-  Pop/R&B / Jazz: Recall@5=0.714, Precision@5=1.000, nDCG@5=1.000, MRR@5=1.000
-  Jazz: Recall@5=0.459, Precision@5=0.800, nDCG@5=0.769, MRR@5=0.833
-  Experimental / Metal / Rock: Recall@5=0.438, Precision@5=0.800, nDCG@5=0.861, MRR@5=1.000
-  Rock / Folk/Country: Recall@5=0.429, Precision@5=0.600, nDCG@5=0.515, MRR@5=0.500
-  Metal / Rock: Recall@5=0.100, Precision@5=0.400, nDCG@5=0.509, MRR@5=1.000
-  Rap / Rock: Recall@5=0.571, Precision@5=0.800, nDCG@5=0.661, MRR@5=0.500
-  Jazz / Pop/R&B / Rock: Recall@5=0.492, Precision@5=0.800, nDCG@5=0.820, MRR@5=1.000
-  Jazz / Rap: Recall@5=0.556, Precision@5=1.000, nDCG@5=1.000, MRR@5=1.000
-  Experimental / Pop/R&B: Recall@5=0.667, Precision@5=0.700, nDCG@5=0.660, MRR@5=0.625
-  Rap / Electronic: Recall@5=0.143, Precision@5=0.600, nDCG@5=0.640, MRR@5=1.000
-  Jazz / Pop/R&B: Recall@5=0.375, Precision@5=0.600, nDCG@5=0.491, MRR@5=0.500
+  Unknown: Recall@5=0.471, Precision@5=0.800, nDCG@5=0.831, MRR@5=0.938
+  Electronic: Recall@5=0.482, Precision@5=0.717, nDCG@5=0.725, MRR@5=0.840
+  Rock: Recall@5=0.444, Precision@5=0.728, nDCG@5=0.740, MRR@5=0.872
+  Experimental / Jazz: Recall@5=0.357, Precision@5=0.650, nDCG@5=0.643, MRR@5=0.771
+  Jazz / Experimental: Recall@5=0.489, Precision@5=0.686, nDCG@5=0.707, MRR@5=0.833
+  Experimental / Rock: Recall@5=0.457, Precision@5=0.680, nDCG@5=0.649, MRR@5=0.667
+  Folk/Country: Recall@5=0.501, Precision@5=0.800, nDCG@5=0.812, MRR@5=0.854
+  Electronic / Experimental: Recall@5=0.597, Precision@5=0.613, nDCG@5=0.637, MRR@5=0.722
+  Electronic / Experimental / Rock: Recall@5=0.095, Precision@5=0.400, nDCG@5=0.384, MRR@5=0.500
+  Experimental: Recall@5=0.415, Precision@5=0.687, nDCG@5=0.714, MRR@5=0.866
+  Pop/R&B: Recall@5=0.584, Precision@5=0.709, nDCG@5=0.694, MRR@5=0.727
+  Rap: Recall@5=0.542, Precision@5=0.726, nDCG@5=0.730, MRR@5=0.809
+  Global / Jazz: Recall@5=0.714, Precision@5=1.000, nDCG@5=1.000, MRR@5=1.000
+  Rock / Metal: Recall@5=0.476, Precision@5=0.733, nDCG@5=0.710, MRR@5=0.833
+  Rap / Pop/R&B: Recall@5=0.429, Precision@5=0.700, nDCG@5=0.660, MRR@5=0.625
+  Pop/R&B / Experimental: Recall@5=0.391, Precision@5=0.700, nDCG@5=0.673, MRR@5=0.750
+  Rap / Experimental: Recall@5=0.468, Precision@5=0.700, nDCG@5=0.650, MRR@5=0.667
+  Rock / Experimental: Recall@5=0.394, Precision@5=0.900, nDCG@5=0.893, MRR@5=1.000
+  Electronic / Rock: Recall@5=0.675, Precision@5=0.600, nDCG@5=0.697, MRR@5=1.000
+  Electronic / Pop/R&B: Recall@5=0.675, Precision@5=0.600, nDCG@5=0.682, MRR@5=1.000
+  Rock / Pop/R&B / Folk/Country: Recall@5=0.500, Precision@5=1.000, nDCG@5=1.000, MRR@5=1.000
+  Metal: Recall@5=0.459, Precision@5=0.675, nDCG@5=0.701, MRR@5=0.833
+  Pop/R&B / Rap: Recall@5=0.491, Precision@5=0.800, nDCG@5=0.856, MRR@5=1.000
+  Global / Pop/R&B: Recall@5=0.714, Precision@5=1.000, nDCG@5=1.000, MRR@5=1.000
+  Experimental / Folk/Country: Recall@5=0.396, Precision@5=0.733, nDCG@5=0.772, MRR@5=1.000
+  Experimental / Electronic: Recall@5=0.472, Precision@5=0.733, nDCG@5=0.688, MRR@5=0.750
+  Pop/R&B / Jazz: Recall@5=0.600, Precision@5=0.600, nDCG@5=0.684, MRR@5=1.000
+  Folk/Country / Experimental: Recall@5=0.600, Precision@5=0.600, nDCG@5=0.684, MRR@5=1.000
+  Jazz: Recall@5=0.426, Precision@5=0.733, nDCG@5=0.718, MRR@5=0.796
+  Experimental / Metal / Rock: Recall@5=0.343, Precision@5=0.600, nDCG@5=0.670, MRR@5=1.000
+  Rock / Folk/Country: Recall@5=0.500, Precision@5=0.800, nDCG@5=0.661, MRR@5=0.500
+  Metal / Rock: Recall@5=0.217, Precision@5=1.000, nDCG@5=1.000, MRR@5=1.000
+  Rap / Rock: Recall@5=0.625, Precision@5=1.000, nDCG@5=1.000, MRR@5=1.000
+  Jazz / Pop/R&B / Rock: Recall@5=0.410, Precision@5=0.700, nDCG@5=0.777, MRR@5=1.000
+  Jazz / Rap: Recall@5=0.375, Precision@5=0.600, nDCG@5=0.684, MRR@5=1.000
+  Experimental / Pop/R&B: Recall@5=0.775, Precision@5=0.700, nDCG@5=0.739, MRR@5=0.750
+  Rap / Electronic: Recall@5=0.190, Precision@5=0.800, nDCG@5=0.854, MRR@5=1.000
+  Jazz / Pop/R&B: Recall@5=0.455, Precision@5=1.000, nDCG@5=1.000, MRR@5=1.000
