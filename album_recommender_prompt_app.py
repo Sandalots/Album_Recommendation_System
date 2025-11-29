@@ -39,7 +39,6 @@ st.set_page_config(page_title="YourNextAlbum", page_icon="🎵")
 with open("app_styles.css") as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
-
 @st.cache_data(ttl=3600)
 def get_album_art(url, _retry=0):
     """Fetch album art from Pitchfork review page"""
@@ -122,7 +121,7 @@ if 'placeholder_text' not in st.session_state:
     st.session_state.placeholder_text = random.choice(placeholder_examples)
 
 user_prompt = st.text_input(
-    "Invoke YourNextAlbum recommendations by describing what kind of album you're looking for:",
+    "Invoke YourNextAlbum recommendations by describing what kind of album you're looking for down below:",
     placeholder=f"e.g., '{st.session_state.placeholder_text}'",
     key="main_input"
 )
@@ -368,20 +367,30 @@ def show_all_visualisations():
     if not plot_files and not txt_files:
         st.info('No visualisations found.')
         return
+    
     st.header('YourNextAlbum Analysis Plots & Reports')
     st.markdown("<p style='text-align: center; color: gray;'>Click on any YourNextAlbum Analysis plot to view it in fullscreen mode.</p>", unsafe_allow_html=True) 
+    
     # Show plots in a grid (2 per row)
     for i in range(0, len(plot_files), 2):
         cols = st.columns(2)
         for j, file in enumerate(plot_files[i:i+2]):
             with cols[j]:
                 st.image(file, caption=os.path.basename(file), use_container_width=True)
+                
     # Show text reports below
     for file in txt_files:
         st.subheader(os.path.basename(file))
         with open(file, 'r') as f:
             st.text(f.read())
 
-# Only show all visualisations if button is clicked
+# Only show YourNextAlbum Analysis visualisations if button is clicked
 if show_analysis:
-    show_all_visualisations()
+        show_all_visualisations()
+
+# Footer
+st.markdown("""
+<div style='text-align: center; font-size: 1.1em; font-weight: bold; margin-top: 2em;'>
+    Group 10 &nbsp;|&nbsp; 29/11/2025 &nbsp;|&nbsp; Version 1.0
+</div>
+""", unsafe_allow_html=True)
