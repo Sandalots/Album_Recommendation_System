@@ -123,7 +123,7 @@ class EnhancedRecommender:
             batch_size=32
         )
 
-        print("✓ Album recommendation models built.")
+        print("Album recommendation models built.")
 
     def recommend_by_mood(self, mood_description, top_n=5, sentiment_filter=None, min_score=None):
         """
@@ -290,7 +290,7 @@ class EnhancedRecommender:
             context: 'party', 'study', 'workout', 'relaxation', 'driving', 'intimate', 'headphones'
         """
         if 'listening_contexts' not in self.df.columns:
-            print("⚠️ Listening context data not available")
+            print("️ Listening context data not available")
             return []
 
         results_df = self.df[
@@ -304,7 +304,7 @@ class EnhancedRecommender:
     def recommend_innovative_albums(self, top_n=5, min_score=7.5):
         """Find the most innovative/groundbreaking albums"""
         if 'novelty_score' not in self.df.columns:
-            print("⚠️ Novelty score data not available")
+            print("️ Novelty score data not available")
             return []
 
         results_df = self.df[
@@ -319,7 +319,7 @@ class EnhancedRecommender:
     def recommend_by_artist_influence(self, artist_name, top_n=5, min_score=7.0):
         """Find albums influenced by or similar to a specific artist"""
         if 'comparisons' not in self.df.columns:
-            print("⚠️ Artist comparison data not available")
+            print("️ Artist comparison data not available")
             return []
 
         results_df = self.df[
@@ -505,10 +505,10 @@ class EnhancedRecommender:
             print("Loading sentence transformer model...")
             self.model = SentenceTransformer('all-MiniLM-L6-v2')
 
-            print(f"✓ Models loaded from {directory}/")
+            print(f" Models loaded from {directory}/")
             return True
         except Exception as e:
-            print(f"⚠️  Error loading models: {e}")
+            print(f"Error loading models: {e}")
             return False
 
     def save_models(self, directory='models'):
@@ -520,7 +520,7 @@ class EnhancedRecommender:
             pickle.dump(self.tfidf_matrix, f)
         np.save(f'{directory}/album_semantic_embeddings.npy', self.embeddings)
 
-        print(f"✓ Models saved to {directory}/ directory.")
+        print(f" Models saved to {directory}/ directory.")
 
 
 def main():
@@ -531,7 +531,7 @@ def main():
     recommender.build_models()
     recommender.save_models()
 
-    print("✓ Album Recommendation Models built and saved.")
+    print("Album Recommendation Models built and saved.")
 
 
 if __name__ == "__main__":

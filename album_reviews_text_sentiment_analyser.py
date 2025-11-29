@@ -414,7 +414,7 @@ class ReviewAnalyser:
         context_indicators_list = [
             r[1]['listening_contexts'] if r[1] else '' for r in results]
 
-        print(f"\n✓ Sentiment analysis complete for {len(df_sample)} reviews.")
+        print(f"\n Sentiment analysis complete for {len(df_sample)} reviews.")
 
         # Existing columns
         df_sample['sentiment_label'] = [s['label'] for s in sentiments]
@@ -454,7 +454,7 @@ class ReviewAnalyser:
         os.makedirs('outputs', exist_ok=True)
         df_sample.to_csv(
             'outputs/pitchfork_reviews_preprocessed_plus_sentiments.csv', index=False)
-        print("✓ Saved to: outputs/pitchfork_reviews_preprocessed_plus_sentiments.csv")
+        print(" Saved to: outputs/pitchfork_reviews_preprocessed_plus_sentiments.csv")
 
         return df_sample
 
@@ -497,7 +497,7 @@ def main():
     analyzer.analyze_all_reviews()
 
     print(
-        f"✓ Complete! All albums sentiment analyzed and saved to '{output_path}'")
+        f" Complete! All albums sentiment analyzed and saved to '{output_path}'")
 
     analyzer.show_examples(num_examples=5)
 

@@ -175,6 +175,7 @@ explicit_ground_truths = {
     "post-punk": ["Dogsbody", "Post-American"],
     "lo-fi beats": ["Blurry"]
 }
+
 # Map these to prompts (add to ground truth for matching prompts)
 for prompt, albums in explicit_ground_truths.items():
     for p in all_prompts:
@@ -184,8 +185,6 @@ for prompt, albums in explicit_ground_truths.items():
                     prompt_ground_truth[p].append(album)
 
 # --------- Additional Metrics: nDCG@5, MRR@5 ---------
-
-
 def dcg_at_k(recommended, ground_truth, k=5):
     dcg = 0.0
     gt_norm = [normalize_album_name(a) for a in ground_truth]
@@ -215,6 +214,7 @@ def mrr_at_k(row, k=5):
 
 
 data = []
+
 for prompt in all_prompts:
     recs = recommender.recommend_diverse(prompt, top_n=5)
     for r in recs:
@@ -229,8 +229,6 @@ for prompt in all_prompts:
 df = pd.DataFrame(data)
 
 # --------- Performance Metrics: Recall@k and Precision@k ---------
-
-
 def normalize_album_name(name):
     if not isinstance(name, str):
         return ''
@@ -264,17 +262,18 @@ df['recall_at_5'] = df.apply(lambda row: recall_at_k(row, 5), axis=1)
 df['precision_at_5'] = df.apply(lambda row: precision_at_k(row, 5), axis=1)
 df['ndcg_at_5'] = df.apply(lambda row: ndcg_at_k(row, 5), axis=1)
 df['mrr_at_5'] = df.apply(lambda row: mrr_at_k(row, 5), axis=1)
-df_nonempty = df[df['ground_truth_albums'].apply(
-    lambda x: isinstance(x, list) and len(x) > 0)].copy()
+df_nonempty = df[df['ground_truth_albums'].apply(lambda x: isinstance(x, list) and len(x) > 0)].copy()
 
 print("\nPerformance Metrics (Prompt-based, Top-5):")
 print("First 5 nDCG@5 values:", df_nonempty['ndcg_at_5'].head().tolist())
 print("First 5 MRR@5 values:", df_nonempty['mrr_at_5'].head().tolist())
+
 if not df_nonempty.empty:
     print(f"Mean Recall@5: {df_nonempty['recall_at_5'].mean():.3f}")
     print(f"Mean Precision@5: {df_nonempty['precision_at_5'].mean():.3f}")
     print(f"Mean nDCG@5: {df_nonempty['ndcg_at_5'].mean():.3f}")
     print(f"Mean MRR@5: {df_nonempty['mrr_at_5'].mean():.3f}")
+
 else:
     print("No prompts with non-empty ground truths to evaluate.")
 
@@ -283,6 +282,7 @@ genre_metrics = {}
 for idx, row in df_nonempty.iterrows():
     genres = [r.get('genre') for r in row['recommended_albums']
               if 'genre' in r and r['genre']]
+    
     for genre in set(genres):
         if genre not in genre_metrics:
             genre_metrics[genre] = {'recall': [],
@@ -291,18 +291,22 @@ for idx, row in df_nonempty.iterrows():
         genre_metrics[genre]['precision'].append(row['precision_at_5'])
         genre_metrics[genre]['ndcg'].append(row['ndcg_at_5'])
         genre_metrics[genre]['mrr'].append(row['mrr_at_5'])
+
 if genre_metrics:
     print("\nPer-genre average metrics (for genres present in recommendations):")
+
     for genre, vals in genre_metrics.items():
         print(
             f"  {genre}: Recall@5={np.mean(vals['recall']):.3f}, Precision@5={np.mean(vals['precision']):.3f}, nDCG@5={np.mean(vals['ndcg']):.3f}, MRR@5={np.mean(vals['mrr']):.3f}")
 
 # Debug: Print recommendations and ground truth for each prompt (only non-empty ground truths)
 print("\nDetailed prompt-by-prompt results:")
+
 for idx, row in df_nonempty.iterrows():
     print(f"\nPrompt: {row['prompt']}")
     print(f"  Ground truth: {row['ground_truth_albums']}")
     print("  Recommended albums:")
+
     for rec in row['recommended_albums']:
         print(
             f"    - {rec.get('album', rec) if isinstance(rec, dict) else rec}")
@@ -312,7 +316,6 @@ for idx, row in df_nonempty.iterrows():
     print(f"  MRR@5: {row['mrr_at_5']}")
 
 # --------- Analysis Functions ---------
-
 VIS_DIR = os.path.join(os.path.dirname(__file__), 'visualisations')
 os.makedirs(VIS_DIR, exist_ok=True)
 

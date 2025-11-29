@@ -57,8 +57,7 @@ stemmer = PorterStemmer()
 stop_words = set(stopwords.words('english'))
 
 # Keep music-specific words that might be in stopwords
-music_stopwords = stop_words - {'not', 'no',
-                                'more', 'most', 'very', 'only', 'too', 'just'}
+music_stopwords = stop_words - {'not', 'no', 'more', 'most', 'very', 'only', 'too', 'just'}
 
 
 def preprocess_text(text):
@@ -215,7 +214,7 @@ print("="*80)
 os.makedirs('outputs', exist_ok=True)
 
 df.to_csv('outputs/pitchfork_reviews_preprocessed.csv', index=False)
-print("✓ Saved to: outputs/pitchfork_reviews_preprocessed.csv")
+print(" Saved to: outputs/pitchfork_reviews_preprocessed.csv")
 
 print(f"\nFinal dataset shape: {df.shape}")
 print(f"Total columns: {len(df.columns)}")

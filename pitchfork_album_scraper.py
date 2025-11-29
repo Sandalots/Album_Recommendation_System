@@ -29,8 +29,7 @@ class PitchforkSeleniumScraper:
         chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--window-size=1920,1080")
-        chrome_options.add_argument(
-            "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+        chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
 
         chrome_options.binary_location = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 
@@ -216,7 +215,7 @@ class PitchforkSeleniumScraper:
                     p.get_text(strip=True)) > 100]
                 review_data['review_text'] = ' '.join(review_paragraphs)
 
-            print(f"✓ Scraped: {review_data['artist_name']} - {review_data['album_name']} (Score: {review_data['score']}, Genre: {review_data['genre']}, Label: {review_data['label']}, Year: {review_data['release_year']})")
+            print(f" Scraped: {review_data['artist_name']} - {review_data['album_name']} (Score: {review_data['score']}, Genre: {review_data['genre']}, Label: {review_data['label']}, Year: {review_data['release_year']})")
 
         except Exception as e:
             print(f"Error scraping {url}: {e}")
@@ -249,12 +248,12 @@ class PitchforkSeleniumScraper:
                             if isinstance(review, dict) and review.get('error') == 'timeout':
                                 self.consecutive_failures += 1
                                 print(
-                                    f"[{completed}/{len(review_links)}] ⚠️  Timeout ({self.consecutive_failures} consecutive)")
+                                    f"[{completed}/{len(review_links)}] ️  Timeout ({self.consecutive_failures} consecutive)")
 
                                 # Stop if too many consecutive failures
                                 if self.consecutive_failures >= self.max_consecutive_failures:
                                     print(
-                                        f"\n⚠️  STOPPING: {self.max_consecutive_failures} consecutive timeouts/connection errors.")
+                                        f"\n️  STOPPING: {self.max_consecutive_failures} consecutive timeouts/connection errors.")
                                     print(
                                         f"Saving {len(self.reviews)} successfully scraped reviews...\n")
                                     self.should_stop = True
@@ -264,14 +263,14 @@ class PitchforkSeleniumScraper:
                                 self.consecutive_failures = 0
                                 self.reviews.append(review)
                                 print(
-                                    f"[{completed}/{len(review_links)}] ✓ Completed")
+                                    f"[{completed}/{len(review_links)}]  Completed")
                         else:
                             # Other failure (not timeout)
                             print(
-                                f"[{completed}/{len(review_links)}] ✗ Failed: {url}")
+                                f"[{completed}/{len(review_links)}]  Failed: {url}")
                             # Don't count non-timeout failures as consecutive
                     except Exception as e:
-                        print(f"[{completed}/{len(review_links)}] ✗ Error: {e}")
+                        print(f"[{completed}/{len(review_links)}]  Error: {e}")
 
         except Exception as e:
             print(f"Error in parallel scraping: {e}")
@@ -405,7 +404,7 @@ class PitchforkSeleniumScraper:
                              ['timeout', 'timed out', 'connection', 'remote disconnected', 'max retries'])
 
             if is_timeout:
-                print(f"⚠️  Timeout/Connection error for {url}: {e}")
+                print(f"️  Timeout/Connection error for {url}: {e}")
                 return {'error': 'timeout'}  # Special indicator for timeout
             else:
                 print(f"Error scraping {url}: {e}")
@@ -426,7 +425,7 @@ class PitchforkSeleniumScraper:
             writer = csv.DictWriter(f, fieldnames=keys)
             writer.writeheader()
             writer.writerows(self.reviews)
-        print(f"✓ Saved {len(self.reviews)} reviews to {filename}")
+        print(f" Saved {len(self.reviews)} reviews to {filename}")
 
 
 def main():
@@ -444,8 +443,8 @@ def main():
             print("="*60)
 
             if scraper.should_stop:
-                print("⚠️  Scraping stopped early due to connection issues")
-                print(f"✓ Saved partial dataset with {len(reviews)} reviews\n")
+                print("️  Scraping stopped early due to connection issues")
+                print(f" Saved partial dataset with {len(reviews)} reviews\n")
 
             sample = reviews[0]
             print("Sample Review:")
@@ -460,11 +459,11 @@ def main():
             print("No reviews were scraped. Check the selectors and page structure.")
 
     except KeyboardInterrupt:
-        print("\n\n⚠️  Scraping interrupted by user")
+        print("\n\n️  Scraping interrupted by user")
         if scraper.reviews:
             print(f"Saving {len(scraper.reviews)} reviews collected so far...")
             scraper.save_to_csv()
-            print("✓ Partial dataset saved\n")
+            print(" Partial dataset saved\n")
         scraper.close_driver()
     except Exception as e:
         print(f"Error during scraping: {e}")
