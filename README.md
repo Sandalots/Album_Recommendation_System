@@ -1,4 +1,4 @@
-# Album Recommendation AI System
+# YourNextAlbum
 
 - **pitchfork_album_scraper.py**: Scrapes thousands of album reviews from Pitchfork using Selenium and BeautifulSoup. The scraper collects review text, scores, album/artist info, and album art URLs.
 - **album_reviews_dataset_creator.py**: Cleans and preprocesses the raw review data using NLTK (Natural Language Toolkit) for tokenization, stopword removal, lemmatization, and stemming, plus HTML/text cleaning and feature engineering (e.g., sentiment, mood, instrumentation, context).

@@ -14,10 +14,7 @@ parser.add_argument('--no-vizs', action='store_true',
                     help='Suppress visualizations')
 
 args = parser.parse_args()
-"""
-Combined script for unsupervised analysis of album recommendations.
-Defines prompts, generates recommendations, and runs all analysis in one file.
-"""
+
 
 recommender = EnhancedRecommender()
 if not recommender.load_models():
@@ -134,15 +131,17 @@ for prompt in all_prompts:
     own_recs = all_recs_by_prompt[prompt]
     n_own = random.randint(2, min(5, len(own_recs))) if own_recs else 0
     own_truth = random.sample(own_recs, n_own) if own_recs else []
-    other_prompts = [p for p in all_prompts if p != prompt and all_recs_by_prompt[p]]
-    other_albums = [album for p in other_prompts for album in all_recs_by_prompt[p]]
-    n_other = random.randint(1, 3) if len(other_albums) >= 3 else len(other_albums)
+    other_prompts = [p for p in all_prompts if p !=
+                     prompt and all_recs_by_prompt[p]]
+    other_albums = [
+        album for p in other_prompts for album in all_recs_by_prompt[p]]
+    n_other = random.randint(1, 3) if len(
+        other_albums) >= 3 else len(other_albums)
     other_truth = random.sample(other_albums, n_other) if other_albums else []
     ground_truth = own_truth + other_truth
     prompt_ground_truth[prompt] = ground_truth
 
-# --- Add more explicit ground truths from dataset (guaranteed to exist) ---
-# These are albums confirmed to exist in outputs/pitchfork_reviews_raw.csv
+
 explicit_ground_truths = {
     "ambient electronic": ["Opus", "Limitless Frame"],
     "pop/r&b": ["Second Line: An Electro Revival", "Euphoric", "Broken Hearts & Beauty Sleep", "Music"],
@@ -185,6 +184,8 @@ for prompt, albums in explicit_ground_truths.items():
                     prompt_ground_truth[p].append(album)
 
 # --------- Additional Metrics: nDCG@5, MRR@5 ---------
+
+
 def dcg_at_k(recommended, ground_truth, k=5):
     dcg = 0.0
     gt_norm = [normalize_album_name(a) for a in ground_truth]
@@ -416,7 +417,8 @@ def plot_recommendation_feature_distribution(df, feature='genre', k=5, show_viz=
         plt.title(f'Top {feature.title()}s in Recommendations')
         plt.xlabel(feature.title())
         plt.ylabel('Count')
-        out_path = os.path.join(VIS_DIR, f'top_{feature}s_in_recommendations.png')
+        out_path = os.path.join(
+            VIS_DIR, f'top_{feature}s_in_recommendations.png')
         plt.tight_layout()
         plt.savefig(out_path)
         plt.close()
@@ -434,14 +436,16 @@ def plot_model_confidence_distribution(df, k=5, show_viz=True):
     for _, row in df.iterrows():
         recs = row['recommended_albums'][:k]
         if recs and isinstance(recs[0], dict):
-            confs = [r.get('similarity') for r in recs if r.get('similarity') is not None]
+            confs = [r.get('similarity')
+                     for r in recs if r.get('similarity') is not None]
         else:
             confs = []
         all_confidences.extend(confs)
     if not all_confidences:
         print("No confidence (similarity) scores found in recommendations.")
         return
-    print(f"Model confidence (similarity) stats: min={np.min(all_confidences):.3f}, max={np.max(all_confidences):.3f}, mean={np.mean(all_confidences):.3f}, median={np.median(all_confidences):.3f}")
+    print(
+        f"Model confidence (similarity) stats: min={np.min(all_confidences):.3f}, max={np.max(all_confidences):.3f}, mean={np.mean(all_confidences):.3f}, median={np.median(all_confidences):.3f}")
     if show_viz:
         plt.figure(figsize=(8, 4))
         plt.hist(all_confidences, bins=20, alpha=0.7, color='#1f77b4')
@@ -454,6 +458,7 @@ def plot_model_confidence_distribution(df, k=5, show_viz=True):
         plt.savefig(out_path)
         plt.close()
         print(f"Saved model confidence distribution plot to {out_path}")
+
 
 def plot_metric_distribution(df, metric, vis_dir=VIS_DIR):
     vals = df[metric].dropna()
@@ -470,6 +475,7 @@ def plot_metric_distribution(df, metric, vis_dir=VIS_DIR):
     plt.savefig(out_path)
     plt.close()
     print(f"Saved {metric} distribution plot to {out_path}")
+
 
 def plot_f1_distribution(df, vis_dir=VIS_DIR):
     # F1 = 2 * (precision * recall) / (precision + recall)
@@ -488,6 +494,7 @@ def plot_f1_distribution(df, vis_dir=VIS_DIR):
     plt.close()
     print(f"Saved F1@5 distribution plot to {out_path}")
 
+
 def plot_per_prompt_error(df, vis_dir=VIS_DIR):
     # Error = 1 - recall@5
     errors = 1 - df['recall_at_5']
@@ -503,14 +510,17 @@ def plot_per_prompt_error(df, vis_dir=VIS_DIR):
     plt.close()
     print(f"Saved per-prompt error plot to {out_path}")
 
+
 def plot_per_genre_metrics_heatmap(df, vis_dir=VIS_DIR):
     # Build a DataFrame: rows=genres, cols=metrics, values=mean
     genre_metrics = {}
     for idx, row in df.iterrows():
-        genres = [r.get('genre') for r in row['recommended_albums'] if 'genre' in r and r['genre']]
+        genres = [r.get('genre') for r in row['recommended_albums']
+                  if 'genre' in r and r['genre']]
         for genre in set(genres):
             if genre not in genre_metrics:
-                genre_metrics[genre] = {'recall': [], 'precision': [], 'ndcg': [], 'mrr': []}
+                genre_metrics[genre] = {'recall': [],
+                                        'precision': [], 'ndcg': [], 'mrr': []}
             genre_metrics[genre]['recall'].append(row['recall_at_5'])
             genre_metrics[genre]['precision'].append(row['precision_at_5'])
             genre_metrics[genre]['ndcg'].append(row['ndcg_at_5'])
@@ -520,7 +530,8 @@ def plot_per_genre_metrics_heatmap(df, vis_dir=VIS_DIR):
         return
     import seaborn as sns
     metrics = ['recall', 'precision', 'ndcg', 'mrr']
-    data = {g: [np.mean([v for v in genre_metrics[g][m] if v is not None]) for m in metrics] for g in genre_metrics}
+    data = {g: [np.mean([v for v in genre_metrics[g][m] if v is not None])
+                for m in metrics] for g in genre_metrics}
     df_heat = pd.DataFrame(data, index=metrics).T
     plt.figure(figsize=(min(20, 0.5*len(df_heat)), 6))
     sns.heatmap(df_heat, annot=True, fmt='.2f', cmap='viridis')
@@ -532,6 +543,7 @@ def plot_per_genre_metrics_heatmap(df, vis_dir=VIS_DIR):
     plt.savefig(out_path)
     plt.close()
     print(f"Saved per-genre metrics heatmap to {out_path}")
+
 
 def plot_error_correlation(df, vis_dir=VIS_DIR):
     # Correlation between metrics
@@ -546,6 +558,7 @@ def plot_error_correlation(df, vis_dir=VIS_DIR):
     plt.savefig(out_path)
     plt.close()
     print(f"Saved metric correlation heatmap to {out_path}")
+
 
 def plot_prompt_length_vs_metrics(df, vis_dir=VIS_DIR):
     # Prompt length vs. recall/precision
@@ -564,6 +577,7 @@ def plot_prompt_length_vs_metrics(df, vis_dir=VIS_DIR):
         plt.close()
         print(f"Saved prompt length vs {metric} plot to {out_path}")
 
+
 def plot_metric_outliers(df, vis_dir=VIS_DIR):
     # Outlier prompts for each metric
     metrics = ['recall_at_5', 'precision_at_5', 'ndcg_at_5', 'mrr_at_5']
@@ -578,7 +592,8 @@ def plot_metric_outliers(df, vis_dir=VIS_DIR):
         if not outliers.empty:
             plt.figure(figsize=(10, 4))
             plt.bar(outliers['prompt'], outliers[metric], color='#ff7f0e')
-            plt.title(f'Outlier Prompts for {metric.replace("_", " ").title()}')
+            plt.title(
+                f'Outlier Prompts for {metric.replace("_", " ").title()}')
             plt.xlabel('Prompt')
             plt.ylabel(metric.replace('_', ' ').title())
             plt.xticks(rotation=90, fontsize=6)
@@ -588,9 +603,10 @@ def plot_metric_outliers(df, vis_dir=VIS_DIR):
             plt.close()
             print(f"Saved outlier prompts for {metric} plot to {out_path}")
 
+
 def generate_summary_report(df, vis_dir=VIS_DIR):
     lines = []
-    lines.append("ALBUM RECOMMENDATION SYSTEM ERROR ANALYSIS SUMMARY\n")
+    lines.append("YOURNEXTALBUM SYSTEM ERROR ANALYSIS SUMMARY\n")
     lines.append(f"Total prompts analyzed: {len(df)}\n")
     for metric in ['recall_at_5', 'precision_at_5', 'ndcg_at_5', 'mrr_at_5']:
         vals = df[metric].dropna()
@@ -600,7 +616,8 @@ def generate_summary_report(df, vis_dir=VIS_DIR):
     rec = df['recall_at_5']
     f1 = 2 * (prec * rec) / (prec + rec)
     f1 = f1.replace([np.inf, -np.inf], np.nan).dropna()
-    lines.append(f"F1@5: mean={f1.mean():.3f}, median={f1.median():.3f}, std={f1.std():.3f}, min={f1.min():.3f}, max={f1.max():.3f}\n")
+    lines.append(
+        f"F1@5: mean={f1.mean():.3f}, median={f1.median():.3f}, std={f1.std():.3f}, min={f1.min():.3f}, max={f1.max():.3f}\n")
     # Top 5 worst and best prompts by recall
     lines.append("\nTop 5 best prompts by Recall@5:\n")
     best = df.sort_values('recall_at_5', ascending=False).head(5)
@@ -611,24 +628,29 @@ def generate_summary_report(df, vis_dir=VIS_DIR):
     for _, row in worst.iterrows():
         lines.append(f"  {row['prompt']}: Recall@5={row['recall_at_5']:.3f}\n")
     # Per-genre summary
-    lines.append("\nPer-genre average metrics (for genres present in recommendations):\n")
+    lines.append(
+        "\nPer-genre average metrics (for genres present in recommendations):\n")
     genre_metrics = {}
     for idx, row in df.iterrows():
-        genres = [r.get('genre') for r in row['recommended_albums'] if 'genre' in r and r['genre']]
+        genres = [r.get('genre') for r in row['recommended_albums']
+                  if 'genre' in r and r['genre']]
         for genre in set(genres):
             if genre not in genre_metrics:
-                genre_metrics[genre] = {'recall': [], 'precision': [], 'ndcg': [], 'mrr': []}
+                genre_metrics[genre] = {'recall': [],
+                                        'precision': [], 'ndcg': [], 'mrr': []}
             genre_metrics[genre]['recall'].append(row['recall_at_5'])
             genre_metrics[genre]['precision'].append(row['precision_at_5'])
             genre_metrics[genre]['ndcg'].append(row['ndcg_at_5'])
             genre_metrics[genre]['mrr'].append(row['mrr_at_5'])
     for genre, vals in genre_metrics.items():
-        lines.append(f"  {genre}: Recall@5={np.mean(vals['recall']):.3f}, Precision@5={np.mean(vals['precision']):.3f}, nDCG@5={np.mean(vals['ndcg']):.3f}, MRR@5={np.mean(vals['mrr']):.3f}\n")
+        lines.append(
+            f"  {genre}: Recall@5={np.mean(vals['recall']):.3f}, Precision@5={np.mean(vals['precision']):.3f}, nDCG@5={np.mean(vals['ndcg']):.3f}, MRR@5={np.mean(vals['mrr']):.3f}\n")
     # Save
     out_path = os.path.join(vis_dir, 'summary.txt')
     with open(out_path, 'w') as f:
         f.writelines(lines)
     print(f"Saved summary report to {out_path}")
+
 
 def plot_metric_by_genre(df, vis_dir=VIS_DIR):
     # Boxplot of each metric by genre
@@ -637,10 +659,12 @@ def plot_metric_by_genre(df, vis_dir=VIS_DIR):
     # Build long-form DataFrame
     rows = []
     for _, row in df.iterrows():
-        genres = [r.get('genre') for r in row['recommended_albums'] if 'genre' in r and r['genre']]
+        genres = [r.get('genre') for r in row['recommended_albums']
+                  if 'genre' in r and r['genre']]
         for genre in set(genres):
             for metric in metrics:
-                rows.append({'genre': genre, 'metric': metric, 'value': row[metric]})
+                rows.append(
+                    {'genre': genre, 'metric': metric, 'value': row[metric]})
     if not rows:
         print("No genre-metric data for boxplot.")
         return
@@ -658,6 +682,7 @@ def plot_metric_by_genre(df, vis_dir=VIS_DIR):
     plt.close()
     print(f"Saved metric by genre boxplot to {out_path}")
 
+
 def plot_violin_metric_spread(df, vis_dir=VIS_DIR):
     import seaborn as sns
     metrics = ['recall_at_5', 'precision_at_5', 'ndcg_at_5', 'mrr_at_5']
@@ -673,6 +698,7 @@ def plot_violin_metric_spread(df, vis_dir=VIS_DIR):
     plt.close()
     print(f"Saved metric violin spread plot to {out_path}")
 
+
 def plot_metrics_pairplot(df, vis_dir=VIS_DIR):
     import seaborn as sns
     metrics = ['recall_at_5', 'precision_at_5', 'ndcg_at_5', 'mrr_at_5']
@@ -683,12 +709,14 @@ def plot_metrics_pairplot(df, vis_dir=VIS_DIR):
     plt.close()
     print(f"Saved metrics pairplot to {out_path}")
 
+
 def plot_prompt_error_ranking(df, vis_dir=VIS_DIR):
     # Rank prompts by error (1-recall@5)
     errors = 1 - df['recall_at_5']
     sorted_idx = errors.sort_values(ascending=False).index
     plt.figure(figsize=(12, 4))
-    plt.plot(range(len(errors)), errors.loc[sorted_idx], marker='o', linestyle='-')
+    plt.plot(range(len(errors)),
+             errors.loc[sorted_idx], marker='o', linestyle='-')
     plt.title('Prompts Ranked by Error (1 - Recall@5)')
     plt.xlabel('Prompt Rank (worst to best)')
     plt.ylabel('Error (1 - Recall@5)')
@@ -698,13 +726,16 @@ def plot_prompt_error_ranking(df, vis_dir=VIS_DIR):
     plt.close()
     print(f"Saved prompt error ranking plot to {out_path}")
 
+
 def plot_unique_artists_per_prompt(df, vis_dir=VIS_DIR):
     unique_counts = []
     for _, row in df.iterrows():
-        artists = [r.get('artist') for r in row['recommended_albums'] if 'artist' in r and r['artist']]
+        artists = [r.get('artist') for r in row['recommended_albums']
+                   if 'artist' in r and r['artist']]
         unique_counts.append(len(set(artists)))
     plt.figure(figsize=(8, 4))
-    plt.hist(unique_counts, bins=range(1, max(unique_counts)+2), alpha=0.7, color='#8c564b')
+    plt.hist(unique_counts, bins=range(
+        1, max(unique_counts)+2), alpha=0.7, color='#8c564b')
     plt.title('Number of Unique Artists per Prompt')
     plt.xlabel('Unique Artists in Top-5')
     plt.ylabel('Count')
@@ -713,6 +744,7 @@ def plot_unique_artists_per_prompt(df, vis_dir=VIS_DIR):
     plt.savefig(out_path)
     plt.close()
     print(f"Saved unique artists per prompt plot to {out_path}")
+
 
 def plot_prompt_frequency_in_top_n(df, n=5, vis_dir=VIS_DIR):
     # How often is each prompt's albums recommended in other prompts' top-N?
@@ -727,18 +759,22 @@ def plot_prompt_frequency_in_top_n(df, n=5, vis_dir=VIS_DIR):
     plt.xlabel('Number of Prompts Album Appears In')
     plt.ylabel('Count')
     plt.tight_layout()
-    out_path = os.path.join(vis_dir, f'album_frequency_across_prompts_top{n}.png')
+    out_path = os.path.join(
+        vis_dir, f'album_frequency_across_prompts_top{n}.png')
     plt.savefig(out_path)
     plt.close()
     print(f"Saved album frequency across prompts plot to {out_path}")
 
+
 def plot_genre_diversity_per_prompt(df, vis_dir=VIS_DIR):
     genre_diversity = []
     for _, row in df.iterrows():
-        genres = [r.get('genre') for r in row['recommended_albums'] if 'genre' in r and r['genre']]
+        genres = [r.get('genre') for r in row['recommended_albums']
+                  if 'genre' in r and r['genre']]
         genre_diversity.append(len(set(genres)))
     plt.figure(figsize=(8, 4))
-    plt.hist(genre_diversity, bins=range(1, max(genre_diversity)+2), alpha=0.7, color='#bcbd22')
+    plt.hist(genre_diversity, bins=range(
+        1, max(genre_diversity)+2), alpha=0.7, color='#bcbd22')
     plt.title('Genre Diversity per Prompt (Unique Genres in Top-5)')
     plt.xlabel('Unique Genres')
     plt.ylabel('Count')
@@ -748,13 +784,16 @@ def plot_genre_diversity_per_prompt(df, vis_dir=VIS_DIR):
     plt.close()
     print(f"Saved genre diversity per prompt plot to {out_path}")
 
+
 def plot_artist_diversity_per_prompt(df, vis_dir=VIS_DIR):
     artist_diversity = []
     for _, row in df.iterrows():
-        artists = [r.get('artist') for r in row['recommended_albums'] if 'artist' in r and r['artist']]
+        artists = [r.get('artist') for r in row['recommended_albums']
+                   if 'artist' in r and r['artist']]
         artist_diversity.append(len(set(artists)))
     plt.figure(figsize=(8, 4))
-    plt.hist(artist_diversity, bins=range(1, max(artist_diversity)+2), alpha=0.7, color='#e377c2')
+    plt.hist(artist_diversity, bins=range(
+        1, max(artist_diversity)+2), alpha=0.7, color='#e377c2')
     plt.title('Artist Diversity per Prompt (Unique Artists in Top-5)')
     plt.xlabel('Unique Artists')
     plt.ylabel('Count')
@@ -764,6 +803,7 @@ def plot_artist_diversity_per_prompt(df, vis_dir=VIS_DIR):
     plt.close()
     print(f"Saved artist diversity per prompt plot to {out_path}")
 
+
 def plot_metric_stability(df, metric='recall_at_5', window=10, vis_dir=VIS_DIR):
     vals = df[metric].dropna().reset_index(drop=True)
     if len(vals) < window:
@@ -772,7 +812,8 @@ def plot_metric_stability(df, metric='recall_at_5', window=10, vis_dir=VIS_DIR):
     rolling = vals.rolling(window=window).mean()
     plt.figure(figsize=(10, 4))
     plt.plot(vals.index, vals, alpha=0.4, label=metric)
-    plt.plot(rolling.index, rolling, color='red', label=f'Rolling Mean ({window})')
+    plt.plot(rolling.index, rolling, color='red',
+             label=f'Rolling Mean ({window})')
     plt.title(f'{metric.replace("_", " ").title()} Stability (Rolling Mean)')
     plt.xlabel('Prompt Index')
     plt.ylabel(metric.replace('_', ' ').title())
@@ -782,6 +823,7 @@ def plot_metric_stability(df, metric='recall_at_5', window=10, vis_dir=VIS_DIR):
     plt.savefig(out_path)
     plt.close()
     print(f"Saved {metric} stability rolling mean plot to {out_path}")
+
 
 def plot_worst_case_metric_per_prompt(df, vis_dir=VIS_DIR):
     # For each prompt, plot the minimum of recall, precision, ndcg, mrr
@@ -800,6 +842,8 @@ def plot_worst_case_metric_per_prompt(df, vis_dir=VIS_DIR):
     print(f"Saved worst-case metric per prompt plot to {out_path}")
 
 # --------- New CDF Plot Function ---------
+
+
 def plot_cdf_metric(df, metric='recall_at_5', vis_dir=VIS_DIR):
     vals = df[metric].dropna().sort_values()
     if vals.empty:
@@ -808,7 +852,8 @@ def plot_cdf_metric(df, metric='recall_at_5', vis_dir=VIS_DIR):
     y = np.arange(1, len(vals)+1) / len(vals)
     plt.figure(figsize=(8, 4))
     plt.plot(vals, y, marker='.', linestyle='-')
-    plt.title(f'Cumulative Distribution Function (CDF) of {metric.replace("_", " ").title()}')
+    plt.title(
+        f'Cumulative Distribution Function (CDF) of {metric.replace("_", " ").title()}')
     plt.xlabel(metric.replace('_', ' ').title())
     plt.ylabel('Proportion of Prompts')
     plt.grid(True, alpha=0.3)
@@ -817,6 +862,7 @@ def plot_cdf_metric(df, metric='recall_at_5', vis_dir=VIS_DIR):
     plt.savefig(out_path)
     plt.close()
     print(f"Saved CDF plot for {metric} to {out_path}")
+
 
 # --------- Run Analyses ---------
 show_viz = not args.no_vizs

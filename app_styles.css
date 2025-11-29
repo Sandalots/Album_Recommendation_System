@@ -1,17 +1,5 @@
-/* Confidence score coloring */
-.confidence-green {
-    color: #27ae60 !important;
-    font-weight: bold !important;
-}
-.confidence-orange {
-    color: #f39c12 !important;
-    font-weight: bold !important;
-}
-.confidence-red {
-    color: #e74c3c !important;
-    font-weight: bold !important;
-}
 /* Album Recommender Streamlit System Custom Styles */
+
 input {
     font-size: 18px !important;
     padding: 12px !important;
@@ -122,4 +110,19 @@ button[kind="primary"] {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+.confidence-green {
+    color: #27ae60 !important;
+    font-weight: bold !important;
+}
+
+.confidence-orange {
+    color: #f39c12 !important;
+    font-weight: bold !important;
+}
+
+.confidence-red {
+    color: #e74c3c !important;
+    font-weight: bold !important;
 }

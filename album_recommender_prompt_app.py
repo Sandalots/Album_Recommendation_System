@@ -122,7 +122,7 @@ if 'placeholder_text' not in st.session_state:
     st.session_state.placeholder_text = random.choice(placeholder_examples)
 
 user_prompt = st.text_input(
-    "Tell us the Album you seek...",
+    "Invoke YourNextAlbum recommendations by describing what kind of album you're looking for:",
     placeholder=f"e.g., '{st.session_state.placeholder_text}'",
     key="main_input"
 )
@@ -369,7 +369,8 @@ def show_all_visualisations():
     if not plot_files and not txt_files:
         st.info('No visualisations found.')
         return
-    st.header('Analysis Plots & Reports')
+    st.header('YourNextAlbum Analysis Plots & Reports')
+    st.markdown("<p style='text-align: center; color: gray;'>Click on any YourNextAlbum Analysis plot to view it in fullscreen mode.</p>", unsafe_allow_html=True) 
     # Show plots in a grid (2 per row)
     for i in range(0, len(plot_files), 2):
         cols = st.columns(2)

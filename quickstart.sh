@@ -1,5 +1,6 @@
 #!/bin/zsh
-# Quickstart script: runs all steps after dataset scraping, but skips error_analyzer tasks
+
+# YourNextAlbum Quickstart script: runs all steps after dataset scraping, but skips error_analyzer tasks
 
 # 0. Create venv if neither .venv nor venv exists
 if [ ! -d ".venv" ] && [ ! -d "venv" ]; then
