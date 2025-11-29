@@ -270,8 +270,7 @@ if recommend_button or surprise_button or user_prompt:
         else:
             st.warning("No albums found. Try a different description.")
     else:
-        st.info(
-            "Tell us what you're in the mood for and we'll find the perfect albums!")
+        st.info("Tell YourNextAlbum what kind of Album you're looking for to get relevant recommendations!")
 
 # Handle "Load More" when no new prompt (user just clicked the button)
 if 'all_recommendations' in st.session_state and 'last_prompt' in st.session_state:
